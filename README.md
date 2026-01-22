@@ -17,13 +17,14 @@
 
 ## 📸 截图
 
+
 <div align="center">
-  <img width="480" height="646" alt="Snipaste_2026-01-22_22-53-40" src="https://github.com/user-attachments/assets/90655319-b328-4670-bd78-ecca9188228d" />
+  <img width="480" height="646" alt="Snipaste_2026-01-22_22-53-40" src="https://github.com/user-attachments/assets/1387d759-a647-4c76-ad78-6045fef7be2b" />
   <p>专注模式 - 红色番茄正在为你加油</p>
 </div>
 
 <div align="center">
-  <img width="1633" height="938" alt="Snipaste_2026-01-22_22-56-23" src="https://github.com/user-attachments/assets/8a5e2d95-2d91-4ea4-8c55-52897a5e0bcf" />
+  <img width="1633" height="938" alt="Snipaste_2026-01-22_22-56-23" src="https://github.com/user-attachments/assets/0c7d6107-5bca-4515-a854-ddc1c13fb1de" />
   <p>时间轴 - 可视化你的专注记录</p>
 </div>
 
@@ -48,7 +49,7 @@
 
 1. 克隆仓库
 ```bash
-https://github.com/vegePeapa/tomatoClock.git
+https://github.com/vegePeapa/Tomato_Clock.git
 ```
 
 2. 安装依赖
@@ -86,11 +87,6 @@ python main.py
 - **主界面置顶**：始终保持在最前面
 - **关闭到托盘**：点击关闭按钮时最小化到托盘
 
-## 📂 数据存储
-
-应用数据存储在以下位置：
-
-- **Windows**: `C:\Users\<你的用户名>\AppData\Local\potato_clock\`
 
 存储文件：
 - `main_data.json` - 专注记录数据
