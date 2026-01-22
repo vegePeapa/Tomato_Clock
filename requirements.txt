@@ -1,0 +1,5 @@
+# PyQt6 - GUI 框架
+PyQt6>=6.0.0
+
+# 可选：PyInstaller（用于打包成 exe）
+# pyinstaller>=5.0.0
