@@ -32,7 +32,7 @@
 
 ### 方式一：下载 EXE 文件（推荐 Windows 用户）
 
-1. 前往 [Releases](https://github.com/vegePeapa/tomatoClock/releases) 页面
+1. 前往 [Releases](https://github.com/vegePeapa/Tomato_Clock/releases) 页面
 2. 下载最新版本的 `PotatoClock.exe`
 3. 双击运行即可使用
 
