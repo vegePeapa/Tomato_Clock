@@ -19,7 +19,7 @@
 
 
 <div align="center">
-  <img width="480" height="646" alt="Snipaste_2026-01-22_22-53-40" src="https://github.com/user-attachments/assets/1387d759-a647-4c76-ad78-6045fef7be2b" />
+  <img width="480" height="646" alt="Snipaste_2026-01-22_22-53-40" src="https://github.com/user-attachments/assets/124642fc-1f28-4897-82af-53307fc296c7" />
   <p>专注模式 - 红色番茄正在为你加油</p>
 </div>
 
