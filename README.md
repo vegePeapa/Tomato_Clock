@@ -17,13 +17,14 @@
 
 ## 📸 截图
 
+
 <div align="center">
-  <img width="480" height="646" alt="Snipaste_2026-01-22_22-53-40" src="https://github.com/user-attachments/assets/90655319-b328-4670-bd78-ecca9188228d" />
+  <img width="480" height="646" alt="Snipaste_2026-01-22_22-53-40" src="https://github.com/user-attachments/assets/124642fc-1f28-4897-82af-53307fc296c7" />
   <p>专注模式 - 红色番茄正在为你加油</p>
 </div>
 
 <div align="center">
-  <img width="1633" height="938" alt="Snipaste_2026-01-22_22-56-23" src="https://github.com/user-attachments/assets/8a5e2d95-2d91-4ea4-8c55-52897a5e0bcf" />
+  <img width="1633" height="938" alt="Snipaste_2026-01-22_22-56-23" src="https://github.com/user-attachments/assets/0c7d6107-5bca-4515-a854-ddc1c13fb1de" />
   <p>时间轴 - 可视化你的专注记录</p>
 </div>
 
@@ -48,7 +49,7 @@
 
 1. 克隆仓库
 ```bash
-https://github.com/vegePeapa/tomatoClock.git
+https://github.com/vegePeapa/Tomato_Clock.git
 ```
 
 2. 安装依赖
