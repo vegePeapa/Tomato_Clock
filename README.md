@@ -32,7 +32,7 @@
 ### 方式一：下载 EXE 文件（推荐 Windows 用户）
 
 1. 前往 [Releases](https://github.com/vegePeapa/tomatoClock/releases) 页面
-2. 下载最新版本的 `PotatoClock.exe`
+2. 下载最新版本的 `TomatoClock.exe`
 3. 双击运行即可使用
 
 **注意**：首次运行时，如果杀毒软件提示，请选择"允许运行"（这是 PyInstaller 打包的正常现象）
@@ -90,7 +90,7 @@ python main.py
 
 应用数据存储在以下位置：
 
-- **Windows**: `C:\Users\<你的用户名>\AppData\Local\potato_clock\`
+- **Windows**: `C:\Users\<你的用户名>\AppData\Local\tomato_clock\`
 
 存储文件：
 - `main_data.json` - 专注记录数据

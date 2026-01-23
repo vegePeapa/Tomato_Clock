@@ -52,11 +52,11 @@ CONFIG_FILE = "config.json"
 def get_app_data_dir():
     r"""
     获取跨平台的应用数据目录
-    Windows: C:\Users\<用户>\AppData\Local\potato_clock\
-    macOS: ~/Library/Application Support/potato_clock/
-    Linux: ~/.local/share/potato_clock/
+    Windows: C:\Users\<用户>\AppData\Local\tomato_clock\
+    macOS: ~/Library/Application Support/tomato_clock/
+    Linux: ~/.local/share/tomato_clock/
     """
-    app_name = "potato_clock"
+    app_name = "tomato_clock"
 
     # Windows 系统
     if os.name == 'nt':
