@@ -220,7 +220,7 @@ class TaskInputDialog(QDialog):
         # 输入框
         from PyQt6.QtWidgets import QLineEdit
         self.input_field = QLineEdit()
-        self.input_field.setPlaceholderText("输入任务名称...")
+      
         self.input_field.setStyleSheet("""
             QLineEdit {
                 padding: 12px 16px;
@@ -229,7 +229,7 @@ class TaskInputDialog(QDialog):
                 background-color: #ffffff;
                 color: #1a1a2e;
                 font-size: 14px;
-                font-weight: 600;
+                
             }
             QLineEdit:focus {
                 border-color: #4ecca3;
