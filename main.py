@@ -775,7 +775,7 @@ class TimerWindow(QDialog):
             self.config = dialog.get_config()
             self._save_config()
             self._apply_config()
-            QMessageBox.information(self, "设置", '<span style="color:white">设置已保存！下次重置后生效。<\span>')
+            QMessageBox.information(self, "设置", '<span style="color:black">设置已保存！下次重置后生效。<\span>')
 
     def _apply_config(self):
         """应用配置到当前实例"""
@@ -825,7 +825,7 @@ class TimerWindow(QDialog):
             if not self.task_choice_remember:
                 # 没有记住选择 询问是否休息和用户是否记住
                 reply = QMessageBox.question(
-                    self, "休息吗", '<span style="color:white">是否休息？</span>', QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                    self, "休息吗", '<span style="color:black">是否休息？</span>', QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
 
                 # 保存用户的选择
                 if reply == QMessageBox.StandardButton.Yes:
@@ -835,7 +835,7 @@ class TimerWindow(QDialog):
 
                 # 询问是否记住选择
                 remember_reply = QMessageBox.question(
-                    self, "记住我的选择", '<span style="color:white">是否记住我的选择？</span>', QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                    self, "记住我的选择", '<span style="color:black">是否记住我的选择？</span>', QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
 
                 if remember_reply == QMessageBox.StandardButton.Yes:
                     self.task_choice_remember = True
@@ -857,7 +857,7 @@ class TimerWindow(QDialog):
         self.is_running = False
         text, ok = TaskInputDialog.getText(self, 
                                         "输入任务名",
-                                        '<span style="color: white;">请输入下一个任务名称：</span>'
+                                        '<span style="color: black;">请输入下一个任务名称：</span>'
                                         )
         # 记录新的专注时段的开始时间
         self.current_focus_start_time = QDateTime.currentDateTime()
@@ -881,7 +881,7 @@ class TimerWindow(QDialog):
                 if self.duration_task_name == DEFAULT_TASK_NAME:
                     # 使用图形界面输入对话框询问当前任务
                     text, ok = TaskInputDialog.getText(
-                        self, "输入任务名", '<span style="color:white">请输入当前任务名称：<\span>')
+                        self, "输入任务名", '<span style="color:black">请输入当前任务名称：<\span>')
                     if ok and text.strip():
                         self.duration_task_name = text.strip()
                     else:
