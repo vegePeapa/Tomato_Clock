@@ -178,6 +178,52 @@ class CalendarCell(QFrame):
         return "\n".join(preview_lines)
 
 
+class StatCard(QFrame):
+    """统计卡片 - 显示单个指标"""
+
+    def __init__(self, title, value, icon_char, parent=None):
+        super().__init__(parent)
+        self.setFrameStyle(QFrame.Shape.StyledPanel)
+        self.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #ffffff, stop:1 #f5fcf8);
+                border: 1.5px solid #dcefe3;
+                border-radius: 12px;
+            }
+        """)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(12, 10, 12, 10)
+        layout.setSpacing(4)
+
+        # Header layout (Icon + Title)
+        header_layout = QHBoxLayout()
+        header_layout.setSpacing(6)
+
+        self.icon_label = QLabel(icon_char)
+        self.icon_label.setFont(QFont("Segoe UI Emoji", 14))
+        self.icon_label.setStyleSheet("border: none; background: transparent;")
+        header_layout.addWidget(self.icon_label)
+
+        self.title_label = QLabel(title)
+        self.title_label.setFont(QFont("Microsoft YaHei UI", 9, QFont.Weight.Medium))
+        self.title_label.setStyleSheet("color: #606f7b; border: none; background: transparent;")
+        header_layout.addWidget(self.title_label, 1)
+
+        layout.addLayout(header_layout)
+
+        # Value label
+        self.value_label = QLabel(value)
+        self.value_label.setFont(QFont("Microsoft YaHei UI", 13, QFont.Weight.Bold))
+        self.value_label.setStyleSheet("color: #1b4332; border: none; background: transparent; padding-top: 2px;")
+        self.value_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        layout.addWidget(self.value_label)
+
+    def update_value(self, value):
+        self.value_label.setText(value)
+
+
 class DetailPanel(QFrame):
     """右侧详情面板 - 显示选中日期的详细信息"""
 
@@ -216,16 +262,24 @@ class DetailPanel(QFrame):
         stats_label.setStyleSheet("color: #43a047; margin-top: 5px;")
         layout.addWidget(stats_label)
 
-        self.stats_content = QLabel("暂无数据")
-        self.stats_content.setFont(QFont("Microsoft YaHei", 11))
-        self.stats_content.setStyleSheet("""
-            color: #424242;
-            background-color: #f1f8e9;
-            border-radius: 8px;
-            padding: 15px;
-            line-height: 1.6;
-        """)
-        layout.addWidget(self.stats_content)
+        # 统计卡片网格容器
+        self.stats_grid_widget = QWidget()
+        self.stats_grid_layout = QGridLayout(self.stats_grid_widget)
+        self.stats_grid_layout.setContentsMargins(0, 0, 0, 0)
+        self.stats_grid_layout.setSpacing(10)
+
+        # 创建四个独立的统计卡片
+        self.card_total_time = StatCard("总专注时长", "0m", "🎯")
+        self.card_sessions = StatCard("专注次数", "0 次", "🔥")
+        self.card_task_types = StatCard("任务种类", "0 种", "📋")
+        self.card_efficiency = StatCard("平均 / 最长", "0m / 0m", "📈")
+
+        self.stats_grid_layout.addWidget(self.card_total_time, 0, 0)
+        self.stats_grid_layout.addWidget(self.card_sessions, 0, 1)
+        self.stats_grid_layout.addWidget(self.card_task_types, 1, 0)
+        self.stats_grid_layout.addWidget(self.card_efficiency, 1, 1)
+
+        layout.addWidget(self.stats_grid_widget)
 
         # 分隔线
         line2 = QFrame()
@@ -304,15 +358,16 @@ class DetailPanel(QFrame):
             avg_minutes = avg_duration // 60
             max_minutes = max_duration // 60
 
-            stats_text = f"""• 总专注时长: {hours}h {minutes}m
-• 任务种类: {unique_task_count} 种
-• 专注次数: {record_count} 次
-• 平均时长: {avg_minutes} 分钟/次
-• 最长任务: {max_minutes} 分钟"""
+            total_str = f"{hours}h {minutes}m" if hours > 0 else f"{minutes}m"
+            self.card_total_time.update_value(total_str)
+            self.card_sessions.update_value(f"{record_count} 次")
+            self.card_task_types.update_value(f"{unique_task_count} 种")
+            self.card_efficiency.update_value(f"{avg_minutes}m / {max_minutes}m")
         else:
-            stats_text = "当天无专注记录"
-
-        self.stats_content.setText(stats_text)
+            self.card_total_time.update_value("0m")
+            self.card_sessions.update_value("0 次")
+            self.card_task_types.update_value("0 种")
+            self.card_efficiency.update_value("0m / 0m")
 
         # 更新时间轴
         self.timeline.set_data(day_data, date_str)
@@ -375,7 +430,22 @@ class CalendarTimelineWindow(QMainWindow):
 
     def _init_ui(self):
         """初始化UI"""
+        # 设置窗口背景与整体配色，避免暗黑模式系统背景影响
+        self.setStyleSheet("""
+            QMainWindow {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #f5fcf8, stop:0.5 #f0fbf6, stop:1 #e8f9f0);
+            }
+            QWidget#centralWidget {
+                background: transparent;
+            }
+            QWidget#leftWidget {
+                background: transparent;
+            }
+        """)
+
         central_widget = QWidget()
+        central_widget.setObjectName("centralWidget")
         self.setCentralWidget(central_widget)
 
         # 主布局 - 水平布局(左侧固定 + 右侧抽屉)
@@ -385,9 +455,11 @@ class CalendarTimelineWindow(QMainWindow):
 
         # 左侧固定区域
         self.left_widget = QWidget()
+        self.left_widget.setObjectName("leftWidget")
         self.left_layout = QVBoxLayout(self.left_widget)
         self.left_layout.setContentsMargins(20, 20, 20, 20)
         self.left_layout.setSpacing(15)
+
 
         # 月度统计栏
         self._create_month_stats_bar(self.left_layout)
@@ -590,14 +662,17 @@ class CalendarTimelineWindow(QMainWindow):
         # 日历单元格容器
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
-        scroll_area.setStyleSheet("QScrollArea { border: none; }")
+        scroll_area.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        scroll_area.viewport().setStyleSheet("background: transparent;")
 
         self.calendar_widget = QWidget()
+        self.calendar_widget.setStyleSheet("background: transparent;")
         self.calendar_layout = QGridLayout(self.calendar_widget)
         self.calendar_layout.setSpacing(8)
 
         scroll_area.setWidget(self.calendar_widget)
         layout.addWidget(scroll_area, 1)
+
 
     def _update_calendar(self):
         """更新日历显示"""

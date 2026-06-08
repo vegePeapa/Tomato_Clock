@@ -315,6 +315,42 @@ QDialog {
         stop:0 #f5fcf8, stop:0.5 #f0fbf6, stop:1 #ffffff);
 }
 
+/* ===== 选项卡面板 ===== */
+QTabWidget::pane {
+    border: 2px solid rgba(78, 204, 163, 0.3);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.96);
+    top: -2px;
+}
+QTabWidget > QWidget {
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 12px;
+}
+QTabBar::tab {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #f6f8fa, stop:1 #eef2f5);
+    border: 2px solid rgba(78, 204, 163, 0.25);
+    border-bottom: none;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    padding: 8px 16px;
+    margin-right: 4px;
+    color: #406b52;
+    font-weight: 600;
+}
+QTabBar::tab:selected {
+    background: rgba(255, 255, 255, 0.96);
+    border-color: rgba(78, 204, 163, 0.3);
+    border-bottom: transparent;
+    color: #1b4332;
+    font-weight: 700;
+}
+QTabBar::tab:hover {
+    background: #ffffff;
+    border-color: rgba(78, 204, 163, 0.45);
+}
+
+
 /* ===== 分组框 ===== */
 QGroupBox {
     font-weight: 700;
