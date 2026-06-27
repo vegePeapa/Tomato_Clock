@@ -202,307 +202,171 @@ class TomatoTimerWidget(QWidget):
 
     def _draw_tomato_body(self, painter, center, radius, is_running=True,
                          is_relax=False, is_cancelled=False):
-        """绘制番茄身体"""
-        # 创建番茄形状（稍微扁平的椭圆）
+        """绘制精致自然的番茄身体（具有 3D 球体质感、环境反光和柔和阴影）"""
+        # 1. 绘制底部软阴影，使番茄具有悬浮立体感
+        shadow_path = QPainterPath()
+        shadow_rect = QRectF(center.x() - radius * 0.95, center.y() + radius * 0.75,
+                             radius * 1.9, radius * 0.25)
+        shadow_path.addEllipse(shadow_rect)
+        shadow_gradient = QRadialGradient(
+            QPointF(center.x(), center.y() + radius * 0.87), radius * 0.9
+        )
+        shadow_gradient.setColorAt(0, QColor(0, 0, 0, 50))
+        shadow_gradient.setColorAt(0.6, QColor(0, 0, 0, 18))
+        shadow_gradient.setColorAt(1, QColor(0, 0, 0, 0))
+        painter.fillPath(shadow_path, shadow_gradient)
+
+        # 2. 绘制番茄主轮廓（稍扁平的饱满椭圆）
         path = QPainterPath()
         rect = QRectF(center.x() - radius, center.y() - radius * 0.9,
                      radius * 2, radius * 1.8)
         path.addEllipse(rect)
 
-        # 设置渐变色
+        # 设置 3D 渐变色光源（位于左上方）
+        grad_center = QPointF(center.x() - radius * 0.25, center.y() - radius * 0.25)
+        
         if is_cancelled:
-            # 灰色
-            gradient = QRadialGradient(center, radius)
-            gradient.setColorAt(0, QColor(200, 200, 200))
-            gradient.setColorAt(0.7, QColor(160, 160, 160))
-            gradient.setColorAt(1, QColor(140, 140, 140))
+            # 灰色模式 3D 渐变
+            gradient = QRadialGradient(grad_center, radius * 1.25)
+            gradient.setColorAt(0, QColor(235, 235, 235))
+            gradient.setColorAt(0.5, QColor(170, 170, 170))
+            gradient.setColorAt(0.85, QColor(125, 125, 125))
+            gradient.setColorAt(1, QColor(95, 95, 95))
         elif is_relax:
-            # 橙色
-            gradient = QRadialGradient(center, radius)
-            gradient.setColorAt(0, QColor(255, 200, 150))
-            gradient.setColorAt(0.7, QColor(255, 160, 100))
-            gradient.setColorAt(1, QColor(230, 140, 80))
+            # 橙色模式 3D 渐变（亮橙到红橙）
+            gradient = QRadialGradient(grad_center, radius * 1.25)
+            gradient.setColorAt(0, QColor(255, 220, 160))
+            gradient.setColorAt(0.4, QColor(255, 150, 80))
+            gradient.setColorAt(0.85, QColor(225, 95, 40))
+            gradient.setColorAt(1, QColor(175, 65, 25))
         else:
-            # 红色（根据是否运行调整亮度）
-            if is_running:
-                bright_offset = 20
-            else:
-                bright_offset = 0
-
-            gradient = QRadialGradient(center, radius)
-            gradient.setColorAt(0, QColor(255 - bright_offset, 100 - bright_offset, 100 - bright_offset))
-            gradient.setColorAt(0.5, QColor(230 - bright_offset, 70 - bright_offset, 70 - bright_offset))
-            gradient.setColorAt(1, QColor(200 - bright_offset, 50 - bright_offset, 50 - bright_offset))
+            # 正常红色模式 3D 渐变（粉红到深红，根据运行状态调整亮度）
+            bright = 0 if is_running else -15
+            gradient = QRadialGradient(grad_center, radius * 1.25)
+            gradient.setColorAt(0, QColor(255 + bright, 115 + bright, 105 + bright))
+            gradient.setColorAt(0.4, QColor(235 + bright, 65 + bright, 55 + bright))
+            gradient.setColorAt(0.85, QColor(190 + bright, 30 + bright, 25 + bright))
+            gradient.setColorAt(1, QColor(145 + bright, 15 + bright, 15 + bright))
 
         painter.fillPath(path, gradient)
 
-        # 添加高光效果
-        highlight_path = QPainterPath()
-        highlight_rect = QRectF(center.x() - radius * 0.4, center.y() - radius * 0.6,
-                               radius * 0.5, radius * 0.4)
-        highlight_path.addEllipse(highlight_rect)
-
-        highlight_gradient = QRadialGradient(
-            QPointF(center.x() - radius * 0.2, center.y() - radius * 0.5), radius * 0.3
+        # 3. 绘制右下侧的反光（Reflex Light），增加物体环境融合感
+        reflex_path = QPainterPath()
+        reflex_path.addEllipse(rect)
+        reflex_gradient = QRadialGradient(
+            QPointF(center.x() + radius * 0.6, center.y() + radius * 0.5), radius * 0.7
         )
-        highlight_gradient.setColorAt(0, QColor(255, 255, 255, 180))
-        highlight_gradient.setColorAt(1, QColor(255, 255, 255, 0))
-        painter.fillPath(highlight_path, highlight_gradient)
+        if is_cancelled:
+            reflex_gradient.setColorAt(0, QColor(255, 255, 255, 35))
+            reflex_gradient.setColorAt(1, QColor(255, 255, 255, 0))
+        elif is_relax:
+            reflex_gradient.setColorAt(0, QColor(255, 255, 180, 55))
+            reflex_gradient.setColorAt(1, QColor(255, 255, 180, 0))
+        else:
+            reflex_gradient.setColorAt(0, QColor(255, 180, 180, 60))
+            reflex_gradient.setColorAt(1, QColor(255, 180, 180, 0))
+        painter.fillPath(reflex_path, reflex_gradient)
+
+        # 4. 绘制主要柔和高光
+        highlight1_path = QPainterPath()
+        h1_rect = QRectF(center.x() - radius * 0.45, center.y() - radius * 0.65,
+                         radius * 0.6, radius * 0.4)
+        highlight1_path.addEllipse(h1_rect)
+        h1_grad = QRadialGradient(
+            QPointF(center.x() - radius * 0.25, center.y() - radius * 0.5), radius * 0.35
+        )
+        h1_grad.setColorAt(0, QColor(255, 255, 255, 140))
+        h1_grad.setColorAt(1, QColor(255, 255, 255, 0))
+        painter.fillPath(highlight1_path, h1_grad)
+
+        # 5. 绘制次要晶莹亮斑，呈现质感光泽
+        highlight2_path = QPainterPath()
+        h2_rect = QRectF(center.x() - radius * 0.3, center.y() - radius * 0.55,
+                         radius * 0.15, radius * 0.1)
+        highlight2_path.addEllipse(h2_rect)
+        painter.fillPath(highlight2_path, QColor(255, 255, 255, 190))
 
     def _draw_tomato_leaves(self, painter, center, radius, is_droopy=False, is_paused=False):
-        """绘制番茄顶部的叶子"""
-        leaf_color = QColor(80, 180, 80)
+        """绘制精致自然的番茄顶部叶子与果蒂"""
+        # 叶片底色与尖端颜色
+        base_green = QColor(46, 125, 50) if (not self._is_running or is_paused) else QColor(56, 142, 60)
+        tip_green = QColor(102, 187, 106) if (not self._is_running or is_paused) else QColor(129, 199, 132)
+        
+        # 1. 绘制果蒂（中心小木质茎，向上并略微向左弯曲）
+        stem_path = QPainterPath()
+        stem_base_y = center.y() - radius * 0.85
+        stem_top_x = center.x() - radius * 0.12
+        stem_top_y = center.y() - radius * 1.05
+        
+        stem_path.moveTo(center.x() - radius * 0.05, stem_base_y)
+        stem_path.quadTo(QPointF(center.x() - radius * 0.04, stem_base_y - radius * 0.12),
+                         QPointF(stem_top_x, stem_top_y))
+        stem_path.lineTo(stem_top_x + radius * 0.08, stem_top_y - radius * 0.02)
+        stem_path.quadTo(QPointF(center.x() + radius * 0.05, stem_base_y - radius * 0.1),
+                         QPointF(center.x() + radius * 0.05, stem_base_y))
+        stem_path.closeSubpath()
+        
+        stem_grad = QLinearGradient(QPointF(center.x(), stem_base_y), QPointF(stem_top_x, stem_top_y))
+        stem_grad.setColorAt(0, QColor(78, 52, 46) if is_paused else QColor(93, 64, 55)) # 木质褐绿
+        stem_grad.setColorAt(1, base_green.darker(110))
+        painter.fillPath(stem_path, stem_grad)
 
-        # 叶子数量和位置
+        # 2. 绘制 5 片舒展有致的放射状叶片（果萼）
         num_leaves = 5
         leaf_angle_offset = self._leaf_wave
-
-        # 暂停时叶子变暗
-        if not self._is_running or is_paused:
-            leaf_color = QColor(50, 120, 50)
-
+        
         for i in range(num_leaves):
-            angle = (2 * math.pi / num_leaves) * i - math.pi / 2 + leaf_angle_offset * 0.1
-
+            # 5 片叶的固定基本角度偏移
+            base_angle = (2 * math.pi / num_leaves) * i - math.pi / 2
+            
+            # 加入微弱的呼吸/叶片微颤动画效果
+            angle = base_angle + math.sin(leaf_angle_offset * 0.5 + i) * 0.05
+            
             if is_droopy:
-                # 下垂的叶子（暂停时下垂更严重）
-                droop_amount = 0.6 if is_paused or not self._is_running else 0.15
-                angle += math.sin(leaf_angle_offset + i) * droop_amount
+                droop = 0.45 if (is_paused or not self._is_running) else 0.12
+                angle += math.sin(leaf_angle_offset + i) * droop
 
-            leaf_length = radius * 0.4
-
-            # 叶子中心点
-            leaf_center_x = center.x() + math.cos(angle) * radius * 0.6
-            leaf_center_y = center.y() + math.sin(angle) * radius * 0.5
-
-            # 绘制叶子
+            leaf_len = radius * 0.46
+            # 叶片尖端位置
+            tip_x = center.x() + math.cos(angle) * (radius * 0.48 + leaf_len * 0.6)
+            tip_y = center.y() - radius * 0.82 + math.sin(angle) * (radius * 0.38 + leaf_len * 0.5)
+            
+            # 叶片连接中心的左/右底角
+            base_left_x = center.x() + math.cos(angle - 0.48) * radius * 0.12
+            base_left_y = center.y() - radius * 0.85 + math.sin(angle - 0.48) * radius * 0.08
+            
+            base_right_x = center.x() + math.cos(angle + 0.48) * radius * 0.12
+            base_right_y = center.y() - radius * 0.85 + math.sin(angle + 0.48) * radius * 0.08
+            
+            # 建立一片叶子的弧形边缘路径
             leaf_path = QPainterPath()
-            leaf_path.moveTo(leaf_center_x, leaf_center_y)
-
-            # 叶子的波浪形状
-            control1_x = leaf_center_x + math.cos(angle + 0.5) * leaf_length
-            control1_y = leaf_center_y + math.sin(angle + 0.5) * leaf_length
-            control2_x = leaf_center_x + math.cos(angle - 0.5) * leaf_length
-            control2_y = leaf_center_y + math.sin(angle - 0.5) * leaf_length
-
-            leaf_path.quadTo(QPointF(control1_x, control1_y),
-                           QPointF(leaf_center_x + math.cos(angle) * leaf_length * 0.8,
-                                  leaf_center_y + math.sin(angle) * leaf_length * 0.8))
-            leaf_path.quadTo(QPointF(control2_x, control2_y),
-                           QPointF(leaf_center_x, leaf_center_y))
-
-            painter.fillPath(leaf_path, leaf_color)
+            leaf_path.moveTo(base_left_x, base_left_y)
+            # 左侧控制点
+            ctrl_left_x = center.x() + math.cos(angle - 0.28) * (radius * 0.2 + leaf_len * 0.5)
+            ctrl_left_y = center.y() - radius * 0.82 + math.sin(angle - 0.28) * (radius * 0.15 + leaf_len * 0.4)
+            leaf_path.quadTo(QPointF(ctrl_left_x, ctrl_left_y), QPointF(tip_x, tip_y))
+            
+            # 右侧控制点
+            ctrl_right_x = center.x() + math.cos(angle + 0.28) * (radius * 0.2 + leaf_len * 0.5)
+            ctrl_right_y = center.y() - radius * 0.82 + math.sin(angle + 0.28) * (radius * 0.15 + leaf_len * 0.4)
+            leaf_path.quadTo(QPointF(ctrl_right_x, ctrl_right_y), QPointF(base_right_x, base_right_y))
+            leaf_path.closeSubpath()
+            
+            # 叶子色泽渐变（内深外浅）
+            leaf_grad = QRadialGradient(QPointF(center.x(), center.y() - radius * 0.85), radius * 0.8)
+            leaf_grad.setColorAt(0, base_green)
+            leaf_grad.setColorAt(1, tip_green)
+            
+            painter.fillPath(leaf_path, leaf_grad)
 
     def _draw_tomato_face(self, painter, center, radius,
                          is_relax=False, is_cancelled=False):
-        """绘制番茄表情（手绘风格）"""
-        # 计算时间比例，决定表情
-        if self._total_seconds > 0:
-            time_ratio = self._remaining_seconds / self._total_seconds
-        else:
-            time_ratio = 1.0
-
-        # 眼睛位置
-        eye_y = center.y() - radius * 0.1
-        left_eye_x = center.x() - radius * 0.25
-        right_eye_x = center.x() + radius * 0.25
-        eye_size = radius * 0.12
-
-        # 根据时间比例和模式绘制表情
-        if is_cancelled:
-            # 取消模式表情
-            if not self._is_running:
-                # 暂停时：深度睡眠 - = = 眼睛 + o 嘴
-                painter.setPen(QPen(QColor(60, 40, 40), 2.5))
-
-                # 左眼：横线 =
-                painter.drawLine(QPointF(left_eye_x - eye_size * 0.6, eye_y),
-                               QPointF(left_eye_x + eye_size * 0.6, eye_y))
-                # 右眼：横线 =
-                painter.drawLine(QPointF(right_eye_x - eye_size * 0.6, eye_y),
-                               QPointF(right_eye_x + eye_size * 0.6, eye_y))
-
-                # 小圆点嘴 o
-                mouth_y = center.y() + radius * 0.3
-                painter.setBrush(QColor(60, 40, 40))
-                painter.drawEllipse(QPointF(center.x(), mouth_y), eye_size * 0.4, eye_size * 0.3)
-            else:
-                # 运行时：无聊表情 - 小圆点眼睛，直线嘴
-                painter.setPen(QPen(QColor(80, 50, 50), 3))
-                painter.setBrush(QColor(80, 50, 50))
-                painter.drawEllipse(QPointF(left_eye_x, eye_y), eye_size * 0.5, eye_size * 0.5)
-                painter.drawEllipse(QPointF(right_eye_x, eye_y), eye_size * 0.5, eye_size * 0.5)
-
-                # 直线嘴
-                mouth_y = center.y() + radius * 0.3
-                painter.setPen(QPen(QColor(80, 50, 50), 3))
-                painter.drawLine(QPointF(left_eye_x, mouth_y), QPointF(right_eye_x, mouth_y))
-
-        elif is_relax:
-            # 放松表情 - 闭眼（弯弯的），微笑
-            painter.setPen(QPen(QColor(80, 50, 50), 3))
-            painter.setBrush(Qt.BrushStyle.NoBrush)
-
-            # 闭眼（弯弯的弧线）
-            painter.drawArc(QRectF(left_eye_x - eye_size, eye_y - eye_size * 0.5,
-                                 eye_size * 2, eye_size), 0, 180 * 16)
-            painter.drawArc(QRectF(right_eye_x - eye_size, eye_y - eye_size * 0.5,
-                                 eye_size * 2, eye_size), 0, 180 * 16)
-
-            # 微笑
-            mouth_y = center.y() + radius * 0.3
-            smile_path = QPainterPath()
-            smile_path.moveTo(left_eye_x, mouth_y)
-            smile_path.quadTo(QPointF(center.x(), mouth_y + radius * 0.15),
-                             QPointF(right_eye_x, mouth_y))
-            painter.drawPath(smile_path)
-
-        # 暂停时的可爱睡觉表情
-        elif not self._is_running and not is_cancelled and not is_relax:
-            # 闭眼（弯弯的弧线，像睡觉一样）
-            painter.setPen(QPen(QColor(60, 30, 30), 3))
-            painter.setBrush(Qt.BrushStyle.NoBrush)
-
-            # 左眼（弯弯的）
-            painter.drawArc(QRectF(left_eye_x - eye_size, eye_y - eye_size * 0.5,
-                                 eye_size * 2, eye_size), 0, 180 * 16)
-            # 右眼（弯弯的）
-            painter.drawArc(QRectF(right_eye_x - eye_size, eye_y - eye_size * 0.5,
-                                 eye_size * 2, eye_size), 0, 180 * 16)
-
-            # 温柔微笑
-            mouth_y = center.y() + radius * 0.3
-            smile_path = QPainterPath()
-            smile_path.moveTo(left_eye_x + radius * 0.05, mouth_y)
-            smile_path.quadTo(QPointF(center.x(), mouth_y + radius * 0.12),
-                             QPointF(right_eye_x - radius * 0.05, mouth_y))
-            painter.setPen(QPen(QColor(60, 30, 30), 3))
-            painter.setBrush(Qt.BrushStyle.NoBrush)
-            painter.drawPath(smile_path)
-
-            # 绘制小巧精致的Zzz睡觉气泡
-            self._draw_sleep_bubble(painter, center, radius)
-
-        else:
-            # 专注模式 - 根据时间比例变化
-            painter.setPen(QPen(QColor(80, 50, 50), 3))
-            painter.setBrush(QColor(80, 50, 50))
-
-            if time_ratio > 0.7:
-                # 时间充足 - 开心大眼睛
-                painter.drawEllipse(QPointF(left_eye_x, eye_y), eye_size, eye_size * 1.2)
-                painter.drawEllipse(QPointF(right_eye_x, eye_y), eye_size, eye_size * 1.2)
-
-                # 眼睛高光
-                painter.setPen(Qt.PenStyle.NoPen)
-                painter.setBrush(QColor(255, 255, 255))
-                painter.drawEllipse(QPointF(left_eye_x + eye_size * 0.3, eye_y - eye_size * 0.3),
-                                  eye_size * 0.3, eye_size * 0.3)
-                painter.drawEllipse(QPointF(right_eye_x + eye_size * 0.3, eye_y - eye_size * 0.3),
-                                  eye_size * 0.3, eye_size * 0.3)
-
-                # 微笑
-                mouth_y = center.y() + radius * 0.35
-                smile_path = QPainterPath()
-                smile_path.moveTo(left_eye_x, mouth_y)
-                smile_path.quadTo(QPointF(center.x(), mouth_y + radius * 0.1),
-                                 QPointF(right_eye_x, mouth_y))
-                painter.setPen(QPen(QColor(80, 50, 50), 3))
-                painter.setBrush(Qt.BrushStyle.NoBrush)
-                painter.drawPath(smile_path)
-
-            elif time_ratio > 0.3:
-                # 时间过半 - 专注表情（眼睛变小）
-                painter.setPen(QPen(QColor(80, 50, 50), 3))
-                painter.setBrush(QColor(80, 50, 50))
-                painter.drawEllipse(QPointF(left_eye_x, eye_y), eye_size * 0.7, eye_size * 0.9)
-                painter.drawEllipse(QPointF(right_eye_x, eye_y), eye_size * 0.7, eye_size * 0.9)
-
-                # 眼睛高光
-                painter.setPen(Qt.PenStyle.NoPen)
-                painter.setBrush(QColor(255, 255, 255))
-                painter.drawEllipse(QPointF(left_eye_x + eye_size * 0.2, eye_y - eye_size * 0.2),
-                                  eye_size * 0.25, eye_size * 0.25)
-                painter.drawEllipse(QPointF(right_eye_x + eye_size * 0.2, eye_y - eye_size * 0.2),
-                                  eye_size * 0.25, eye_size * 0.25)
-
-                # 咬嘴表情
-                mouth_y = center.y() + radius * 0.35
-                painter.setPen(QPen(QColor(80, 50, 50), 3))
-                painter.setBrush(Qt.BrushStyle.NoBrush)
-                painter.drawLine(QPointF(left_eye_x + radius * 0.1, mouth_y),
-                               QPointF(right_eye_x - radius * 0.1, mouth_y))
-
-            else:
-                # 时间快到了 - 紧张表情（眼睛很小，有汗水）
-                painter.setPen(QPen(QColor(80, 50, 50), 3))
-                painter.setBrush(QColor(80, 50, 50))
-                painter.drawEllipse(QPointF(left_eye_x, eye_y), eye_size * 0.5, eye_size * 0.7)
-                painter.drawEllipse(QPointF(right_eye_x, eye_y), eye_size * 0.5, eye_size * 0.7)
-
-                # 汗水滴（在右边眼睛旁边）
-                if self._is_running:
-                    sweat_x = right_eye_x + eye_size * 1.5
-                    sweat_y = eye_y - eye_size * 0.5
-                    sweat_path = QPainterPath()
-                    sweat_path.moveTo(sweat_x, sweat_y)
-                    sweat_path.lineTo(sweat_x, sweat_y + eye_size)
-                    sweat_path.quadTo(QPointF(sweat_x - eye_size * 0.3, sweat_y + eye_size * 1.3),
-                                     QPointF(sweat_x - eye_size * 0.6, sweat_y + eye_size))
-                    sweat_path.lineTo(sweat_x, sweat_y)
-                    painter.setBrush(QColor(150, 200, 255))
-                    painter.fillPath(sweat_path, QColor(150, 200, 255))
-
-                # 波浪嘴（紧张）
-                mouth_y = center.y() + radius * 0.35
-                wave_path = QPainterPath()
-                wave_path.moveTo(left_eye_x + radius * 0.05, mouth_y)
-                wave_path.lineTo(left_eye_x + radius * 0.25, mouth_y - radius * 0.05)
-                wave_path.lineTo(center.x(), mouth_y + radius * 0.05)
-                wave_path.lineTo(right_eye_x - radius * 0.25, mouth_y - radius * 0.05)
-                wave_path.lineTo(right_eye_x - radius * 0.05, mouth_y)
-                painter.setPen(QPen(QColor(80, 50, 50), 2.5))
-                painter.setBrush(Qt.BrushStyle.NoBrush)
-                painter.drawPath(wave_path)
+        """已删除番茄表情，保持番茄纯净高档质感"""
+        pass
 
     def _draw_sleep_bubble(self, painter, center, radius):
-        """绘制Zzz睡觉气泡"""
-        # 气泡位置（番茄右上角）
-        bubble_x = center.x() + radius * 0.6
-        bubble_y = center.y() - radius * 0.5
-
-        # 绘制半透明气泡背景
-        bubble_path = QPainterPath()
-        bubble_rect = QRectF(bubble_x, bubble_y - radius * 0.3,
-                            radius * 0.5, radius * 0.4)
-        bubble_path.addRoundedRect(bubble_rect, 8, 8)
-
-        bubble_color = QColor(200, 220, 255, 120)
-        painter.fillPath(bubble_path, bubble_color)
-
-        # 绘制Zzz文字
-        painter.setPen(QColor(100, 100, 150))
-        font = QFont("Microsoft YaHei", int(radius * 0.15), QFont.Weight.Bold)
-        painter.setFont(font)
-
-        # 第一个Z（大）
-        z1_rect = QRectF(bubble_x + radius * 0.08, bubble_y - radius * 0.15,
-                         radius * 0.15, radius * 0.15)
-        painter.drawText(z1_rect, Qt.AlignmentFlag.AlignCenter, "Z")
-
-        # 第二个Z（中）
-        z2_rect = QRectF(bubble_x + radius * 0.18, bubble_y - radius * 0.22,
-                         radius * 0.12, radius * 0.12)
-        font2 = QFont("Microsoft YaHei", int(radius * 0.12), QFont.Weight.Bold)
-        painter.setFont(font2)
-        painter.drawText(z2_rect, Qt.AlignmentFlag.AlignCenter, "Z")
-
-        # 第三个Z（小）
-        z3_rect = QRectF(bubble_x + radius * 0.26, bubble_y - radius * 0.28,
-                         radius * 0.1, radius * 0.1)
-        font3 = QFont("Microsoft YaHei", int(radius * 0.1), QFont.Weight.Bold)
-        painter.setFont(font3)
-        painter.drawText(z3_rect, Qt.AlignmentFlag.AlignCenter, "z")
+        """已停用Zzz睡觉气泡"""
+        pass
 
     def _draw_pause_overlay(self, painter, center, radius):
         """绘制通用的暂停半透明遮罩"""

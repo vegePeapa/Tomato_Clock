@@ -1,0 +1,146 @@
+/* ===== 主窗口背景 ===== */
+QDialog#TimerWindow {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+        stop:0 #e8f5e9, stop:0.5 #f1f8f3, stop:1 #f0fbf6);
+    font-family: 'Microsoft YaHei UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+    color: #2e7d32;
+}
+
+/* ===== 模式标签 ===== */
+#mode_label {
+    color: #2e7d32;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 12px 24px;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 rgba(129, 199, 132, 0.2), stop:1 rgba(102, 187, 106, 0.2));
+    border-radius: 24px;
+    border: 2px solid rgba(102, 187, 106, 0.4);
+}
+
+/* ===== 顶部按钮（设置/更多）===== */
+#settingsButton, #moreButton {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(102, 187, 106, 0.35);
+    border-radius: 24px;
+    color: #2e7d32;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 8px;
+    min-width: 40px;
+    min-height: 40px;
+}
+#settingsButton:hover, #moreButton:hover {
+    background-color: rgba(255, 255, 255, 1);
+    border-color: rgba(102, 187, 106, 0.6);
+}
+#settingsButton:pressed, #moreButton:pressed {
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+/* ===== 更多菜单样式 ===== */
+QMenu#more_menu {
+    background-color: rgba(255, 255, 255, 0.98);
+    border: 2px solid rgba(102, 187, 106, 0.4);
+    border-radius: 12px;
+    padding: 8px 0;
+}
+QMenu#more_menu::item {
+    padding: 12px 32px;
+    color: #2e7d32;
+    font-size: 14px;
+    font-weight: 600;
+}
+QMenu#more_menu::item:selected {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 rgba(102, 187, 106, 0.2), stop:1 rgba(129, 199, 132, 0.2));
+}
+QMenu#more_menu::separator {
+    height: 1px;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 rgba(102, 187, 106, 0), stop:0.5 rgba(102, 187, 106, 0.3), stop:1 rgba(102, 187, 106, 0));
+    margin: 6px 12px;
+}
+
+/* ===== 时间显示容器 ===== */
+#timerDisplayWidget {
+    background-color: transparent;
+    border: none;
+}
+#timerContainer {
+    background-color: transparent;
+}
+
+/* ===== 今日专注时长标签 ===== */
+#timer_duration_laber {
+    color: #2e7d32;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    padding: 8px 16px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 16px;
+    border: 1px solid rgba(102, 187, 106, 0.25);
+}
+
+/* ===== 循环次数标签 ===== */
+#cycle_label {
+    color: #388e3c;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 8px 16px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 16px;
+    border: 1px solid rgba(102, 187, 106, 0.25);
+}
+
+/* ===== 次要信息标签 ===== */
+#secondaryInfoLabel {
+    color: #43a047;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* ===== 开始/暂停按钮（主按钮）===== */
+#startButton {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #81c784, stop:1 #66bb6a);
+    border: 3px solid #a5d6a7;
+    padding: 20px 40px;
+    border-radius: 36px;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+}
+#startButton:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #a5d6a7, stop:1 #81c784);
+    border-color: #c8e6c9;
+}
+#startButton:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #66bb6a, stop:1 #4caf50);
+    border-color: #66bb6a;
+}
+
+/* ===== 结束任务按钮（次主按钮）===== */
+#finishButton {
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 3px solid rgba(102, 187, 106, 0.5);
+    padding: 20px 32px;
+    border-radius: 36px;
+    color: #2e7d32;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+}
+#finishButton:hover {
+    background-color: rgba(255, 255, 255, 1);
+    border-color: rgba(102, 187, 106, 0.7);
+}
+#finishButton:pressed {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-color: rgba(102, 187, 106, 0.4);
+}

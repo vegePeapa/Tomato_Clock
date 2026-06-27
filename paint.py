@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QMainWindow, QL
                              QToolTip, QFrame, QGridLayout, QScrollArea)
 from PyQt6.QtGui import QPainter, QColor, QFont, QFontDatabase, QPen, QBrush, QLinearGradient
 from PyQt6.QtCore import Qt, QTime, QRect, QPoint
-from main import TimerMode, DATA_FILE_FULL_PATH
+from constants import TimerMode, DATA_FILE_FULL_PATH
 
 # 使用 main.py 中的数据文件路径
 DATA_PATH = DATA_FILE_FULL_PATH

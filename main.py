@@ -1,7 +1,6 @@
 import sys
 import os
 import json
-import re
 from functools import wraps
 from PyQt6.QtWidgets import (
     QApplication, QDialog, QMessageBox, QSystemTrayIcon,
@@ -14,146 +13,11 @@ from PyQt6.QtMultimedia import QSoundEffect
 from ui_timer import Ui_Timer
 from tomato_timer_widget import TomatoTimerWidget
 
-# ===== 从 .qss 文件加载样式 =====
-def get_style_file_path():
-    """获取 style.qss 文件路径（兼容打包后的exe）"""
-    # PyInstaller 打包后，资源文件在 sys._MEIPASS
-    if hasattr(sys, '_MEIPASS'):
-        return os.path.join(sys._MEIPASS, "style.qss")
-
-    # 正常情况：使用文件所在目录
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "style.qss")
-
-_qss_file = get_style_file_path()
-
-FOCUS_STYLE = RELAX_STYLE = SETTINGS_STYLE = ""
-try:
-    with open(_qss_file, 'r', encoding='utf-8') as f:
-        qss_content = f.read()
-
-    # 提取各个样式
-    focus_match = re.search(r'FOCUS_STYLE\s*=\s*"""(.*?)"""', qss_content, re.DOTALL)
-    relax_match = re.search(r'RELAX_STYLE\s*=\s*"""(.*?)"""', qss_content, re.DOTALL)
-    settings_match = re.search(r'SETTINGS_STYLE\s*=\s*"""(.*?)"""', qss_content, re.DOTALL)
-
-    FOCUS_STYLE = focus_match.group(1).strip() if focus_match else ""
-    RELAX_STYLE = relax_match.group(1).strip() if relax_match else ""
-    SETTINGS_STYLE = settings_match.group(1).strip() if settings_match else ""
-
-    print("✓ 样式加载成功")
-except Exception as e:
-    print(f"✗ 样式加载失败: {e}")
-
-DEFAULT_TASK_NAME = "未命名任务"
-DATA_FILE = "main_data.json"
-CONFIG_FILE = "config.json"
-
-# ===== 获取应用数据目录 =====
-def get_app_data_dir():
-    r"""
-    获取跨平台的应用数据目录
-    Windows: C:\Users\<用户>\AppData\Local\tomato_clock\
-    macOS: ~/Library/Application Support/tomato_clock/
-    Linux: ~/.local/share/tomato_clock/
-    """
-    app_name = "tomato_clock"
-
-    # Windows 系统
-    if os.name == 'nt':
-        # 直接使用环境变量获取 AppData/Local 目录
-        appdata = os.environ.get('LOCALAPPDATA')
-        if appdata:
-            data_dir = os.path.join(appdata, app_name)
-        else:
-            # 回退到用户目录
-            data_dir = os.path.join(os.path.expanduser('~'), 'AppData', 'Local', app_name)
-    # macOS 系统
-    elif os.name == 'posix' and sys.platform == 'darwin':
-        data_dir = os.path.expanduser(f'~/Library/Application Support/{app_name}')
-    # Linux 系统
-    else:
-        data_dir = os.path.expanduser(f'~/.local/share/{app_name}')
-
-    # 如果目录不存在，创建它
-    if not os.path.exists(data_dir):
-        try:
-            os.makedirs(data_dir, exist_ok=True)
-            print(f"✓ 创建数据目录: {data_dir}")
-        except Exception as e:
-            print(f"✗ 创建数据目录失败: {e}")
-            # 最后的回退：使用程序目录
-            data_dir = os.path.dirname(os.path.abspath(__file__))
-            print(f"⚠ 使用程序目录: {data_dir}")
-
-    return data_dir
-
-# 获取数据目录
-DATA_DIR = get_app_data_dir()
-DATA_FILE_FULL_PATH = os.path.join(DATA_DIR, DATA_FILE)
-CONFIG_FILE_FULL_PATH = os.path.join(DATA_DIR, CONFIG_FILE)
-
-# ===== 数据迁移：从程序目录迁移到用户目录 =====
-def migrate_data_to_user_dir():
-    """检查程序目录是否有旧数据，如果有则迁移到用户目录"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    old_data_file = os.path.join(script_dir, DATA_FILE)
-    old_config_file = os.path.join(script_dir, CONFIG_FILE)
-
-    # 检查是否存在旧数据
-    has_old_data = os.path.exists(old_data_file)
-    has_old_config = os.path.exists(old_config_file)
-
-    if not has_old_data and not has_old_config:
-        return  # 没有旧数据，不需要迁移
-
-    print("🔄 检测到旧数据，开始迁移...")
-    try:
-        # 迁移数据文件
-        if has_old_data and not os.path.exists(DATA_FILE_FULL_PATH):
-            import shutil
-            shutil.copy2(old_data_file, DATA_FILE_FULL_PATH)
-            print(f"✓ 数据文件已迁移到: {DATA_FILE_FULL_PATH}")
-
-        # 迁移配置文件
-        if has_old_config and not os.path.exists(CONFIG_FILE_FULL_PATH):
-            import shutil
-            shutil.copy2(old_config_file, CONFIG_FILE_FULL_PATH)
-            print(f"✓ 配置文件已迁移到: {CONFIG_FILE_FULL_PATH}")
-
-        # 备份旧文件（重命名为 .bak）
-        if has_old_data:
-            backup_file = old_data_file + ".bak"
-            if not os.path.exists(backup_file):
-                os.rename(old_data_file, backup_file)
-                print(f"✓ 旧数据文件已备份: {backup_file}")
-
-        if has_old_config:
-            backup_file = old_config_file + ".bak"
-            if not os.path.exists(backup_file):
-                os.rename(old_config_file, backup_file)
-                print(f"✓ 旧配置文件已备份: {backup_file}")
-
-        print("✅ 数据迁移完成！")
-    except Exception as e:
-        print(f"⚠️ 数据迁移失败: {e}")
-        print("💡 提示：旧数据仍保留在程序目录中")
-
-# 在模块加载时执行数据迁移
-migrate_data_to_user_dir()
-
-
-# 默认配置
-DEFAULT_CONFIG = {
-    "focus_duration": 25,      # 专注时长(分钟)
-    "relax_duration": 5,       # 休息时长(分钟)
-    "cycle_count": 2,          # 循环次数
-    "max_pause_time": 10,      # 最大暂停时间(分钟)
-    "sound_enabled": True,     # 是否启用声音
-    "sound_volume": 80,        # 音量(0-100)
-    "auto_start_break": False,  # 自动开始休息
-    "auto_start_focus": False,  # 自动开始专注
-}
-
+# 从 constants 模块导入共用常量
+from constants import (
+    TimerMode, DATA_FILE_FULL_PATH, CONFIG_FILE_FULL_PATH,
+    DEFAULT_TASK_NAME, DEFAULT_CONFIG, DATA_FILE
+)
 
 def report(func):
     @wraps(func)
@@ -183,12 +47,6 @@ def error_data_save(func):
     return wrapper
 
 
-class TimerMode:
-    FOCUS = "专注"
-    RELAX = "休息"
-    COMPLETED = "完成"
-    CANCELLED = "专注(无番茄计时)"
-
 
 # ============== 自定义输入对话框 ==============
 class TaskInputDialog(QDialog):
@@ -199,6 +57,12 @@ class TaskInputDialog(QDialog):
         self.setWindowTitle(title)
         self.setFixedSize(400, 180)
         self.result_text = ""
+        self.setStyleSheet("""
+            QDialog {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #f5fcf8, stop:1 #ffffff);
+            }
+        """)
         self._setup_ui(prompt)
 
     def _setup_ui(self, prompt: str):
@@ -306,12 +170,23 @@ class SettingsDialog(QDialog):
 
     def __init__(self, config: dict, parent=None):
         super().__init__(parent)
+        self.setObjectName("SettingsDialog")  # 设置对象名称匹配 QSS 选择器
         self.config = config.copy()  # 复制配置以便取消时不影响原配置
         self.setWindowTitle("设置")
         self.setFixedSize(500, 450)
-        self.setStyleSheet(SETTINGS_STYLE)
         self._setup_ui()
         self._load_config()
+
+        # 加载设置界面专用样式
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        qss_path = os.path.join(script_dir, "settings.qss")
+        if os.path.exists(qss_path):
+            try:
+                with open(qss_path, "r", encoding="utf-8") as f:
+                    self.setStyleSheet(f.read())
+            except Exception as e:
+                print(f"加载设置样式表失败: {e}")
+
 
     def _setup_ui(self):
         """初始化设置界面 - 使用选项卡布局"""
@@ -532,8 +407,11 @@ class TimerWindow(QDialog):
         self.ui = Ui_Timer()
         self.ui.setupUi(self)
 
+        self.setObjectName("TimerWindow")  # 设置对象名称以匹配 QSS 选择器 QDialog#TimerWindow
+
         # 设置窗口标题
         self.setWindowTitle("番茄钟计时器")
+
 
         # ===== 初始化液体时间组件 =====
         self._init_liquid_timer()
@@ -727,11 +605,28 @@ class TimerWindow(QDialog):
             self.tray_start_action.setText("暂停" if self.is_running else "开始")
 
     def _apply_style(self):
-        """根据当前模式应用样式"""
+        """根据当前模式设置动态属性并加载应用对应的 QSS 样式表"""
         if self.mode == TimerMode.RELAX:
-            self.setStyleSheet(RELAX_STYLE)
+            self.setProperty("timerMode", "relax")
+            qss_file = "relax.qss"
         else:
-            self.setStyleSheet(FOCUS_STYLE)
+            self.setProperty("timerMode", "focus")
+            qss_file = "focus.qss"
+        
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        qss_path = os.path.join(script_dir, qss_file)
+        if os.path.exists(qss_path):
+            try:
+                with open(qss_path, "r", encoding="utf-8") as f:
+                    self.setStyleSheet(f.read())
+                print(f"✓ 已加载并应用模式样式表: {qss_file}")
+            except Exception as e:
+                print(f"✗ 无法加载模式样式表 {qss_file}: {e}")
+        
+        # 触发样式刷新
+        self.style().unpolish(self)
+        self.style().polish(self)
+
 
     def _update_mode_label(self):
         """更新模式标签显示"""
@@ -1061,15 +956,29 @@ class TimerWindow(QDialog):
             return {}
 
     def save_time_data(self, data):
-        """程序结束最终保存数据"""
+        """程序结束最终保存数据（原子写入，防止写入中途崩溃导致文件损坏）"""
         file_path = self.DATA_FILE_FULL_PATH  # 使用完整路径
+        temp_file_path = file_path + ".tmp"
         try:
-            with open(file_path, 'w', encoding='utf-8') as f:
-                # 使用 indent=4 使 JSON 格式更易读
+            # 1. 先写入临时文件
+            with open(temp_file_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=4, ensure_ascii=False)
-            print(f"数据已成功保存到: {self.DATA_FILE},路径为{self.DATA_FILE_FULL_PATH}")
+            
+            # 2. 原子性替换原文件
+            if os.path.exists(file_path):
+                os.replace(temp_file_path, file_path)
+            else:
+                os.rename(temp_file_path, file_path)
+                
+            print(f"数据已成功原子保存到: {self.DATA_FILE},路径为{file_path}")
         except Exception as e:
             print(f"保存数据失败: {e}")
+            if os.path.exists(temp_file_path):
+                try:
+                    os.remove(temp_file_path)
+                except:
+                    pass
+
 
     @report
     @error_data_save
@@ -1183,7 +1092,7 @@ class TimerWindow(QDialog):
                 self._get_current_total_duration(),
                 self.mode_seconds_left
             )
-            self.more_menu.actions()[1].setText("停止番茄钟")
+            self.more_menu.actions()[1].setText("自由记录")
     def _get_current_total_duration(self):
         """获取当前模式的总时长"""
         if self.mode == TimerMode.FOCUS or self.mode == TimerMode.CANCELLED:
@@ -1212,11 +1121,11 @@ class TimerWindow(QDialog):
 
 
 if __name__ == "__main__":
-    # INFO:window = __import__('PyQt6.QtWidgets', fromlist=['QApplication']).QApplication.instance().main_window 调试用
-    # window.timer.isActive()查看是否在运行
     app = QApplication(sys.argv)
+
     app.main_window = TimerWindow()
     window = app.main_window
     window.show()
     print(f"我的 PID 是 → {os.getpid()}")
     sys.exit(app.exec())
+

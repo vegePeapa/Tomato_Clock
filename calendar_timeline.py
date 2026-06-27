@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QDate, QTimer, QPropertyAnimation, QEasingCurve, QSize
 from PyQt6.QtGui import QPainter, QColor, QFont, QPen
-from main import DATA_FILE_FULL_PATH
+from constants import DATA_FILE_FULL_PATH
 # 导入原有的时间轴组件
 from paint import TimelineWidget
 
@@ -23,7 +23,8 @@ class CalendarCell(QFrame):
         self.date_str = date_str
         self.day_data = day_data or []
         self.setFrameStyle(QFrame.Shape.Box)
-        self.setFixedSize(150, 140)  # 增加单元格尺寸
+        self.setMinimumSize(110, 100)  # 最小尺寸限制
+        self.setMaximumSize(220, 180)  # 最大尺寸限制
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
         # 计算当天的统计信息
