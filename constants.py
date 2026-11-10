@@ -66,6 +66,62 @@ DATA_FILE_FULL_PATH = os.path.join(DATA_DIR, DATA_FILE)
 CONFIG_FILE_FULL_PATH = os.path.join(DATA_DIR, CONFIG_FILE)
 
 
+def ensure_ui_assets():
+    """确保 UI 必需的图标资源存在"""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    up_path = os.path.join(script_dir, "arrow_up.png")
+    down_path = os.path.join(script_dir, "arrow_down.png")
+    chk_path = os.path.join(script_dir, "checkbox_checked.png")
+
+    if os.path.exists(up_path) and os.path.exists(down_path) and os.path.exists(chk_path):
+        return
+
+    try:
+        from PyQt6.QtGui import QPixmap, QPainter, QPolygonF, QColor, QPen
+        from PyQt6.QtCore import QPointF, Qt
+
+        if not os.path.exists(up_path):
+            pix_up = QPixmap(16, 16)
+            pix_up.fill(Qt.GlobalColor.transparent)
+            p = QPainter(pix_up)
+            p.setRenderHint(QPainter.RenderHint.Antialiasing)
+            p.setPen(Qt.PenStyle.NoPen)
+            p.setBrush(QColor("#1b4332"))
+            p.drawPolygon(QPolygonF([QPointF(4, 10), QPointF(12, 10), QPointF(8, 5)]))
+            p.end()
+            pix_up.save(up_path)
+
+        if not os.path.exists(down_path):
+            pix_down = QPixmap(16, 16)
+            pix_down.fill(Qt.GlobalColor.transparent)
+            p = QPainter(pix_down)
+            p.setRenderHint(QPainter.RenderHint.Antialiasing)
+            p.setPen(Qt.PenStyle.NoPen)
+            p.setBrush(QColor("#1b4332"))
+            p.drawPolygon(QPolygonF([QPointF(4, 6), QPointF(12, 6), QPointF(8, 11)]))
+            p.end()
+            pix_down.save(down_path)
+
+        if not os.path.exists(chk_path):
+            pix_chk = QPixmap(20, 20)
+            pix_chk.fill(Qt.GlobalColor.transparent)
+            p = QPainter(pix_chk)
+            p.setRenderHint(QPainter.RenderHint.Antialiasing)
+            p.setPen(Qt.PenStyle.NoPen)
+            p.setBrush(QColor("#4ecca3"))
+            p.drawRoundedRect(1, 1, 18, 18, 5, 5)
+            pen = QPen(QColor("#ffffff"), 2.2)
+            pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+            pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+            p.setPen(pen)
+            p.drawLine(5, 10, 8, 14)
+            p.drawLine(8, 14, 15, 6)
+            p.end()
+            pix_chk.save(chk_path)
+    except Exception as e:
+        print(f"生成图标资源失败: {e}")
+
+
 def migrate_data_to_user_dir():
     """检查程序目录是否有旧数据，如果有则迁移到用户目录"""
     script_dir = os.path.dirname(os.path.abspath(__file__))

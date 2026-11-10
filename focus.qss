@@ -23,7 +23,7 @@ QDialog#TimerWindow {
 #settingsButton, #moreButton {
     background-color: rgba(255, 255, 255, 0.85);
     border: 2px solid rgba(78, 204, 163, 0.25);
-    border-radius: 24px;
+    border-radius: 22px;
     color: #1b4332;
     font-size: 20px;
     font-weight: bold;
@@ -37,6 +37,13 @@ QDialog#TimerWindow {
 }
 #settingsButton:pressed, #moreButton:pressed {
     background-color: rgba(255, 255, 255, 0.7);
+}
+
+/* 隐藏更多按钮默认自带的黑色下拉箭头 */
+#moreButton::menu-indicator {
+    image: none;
+    width: 0px;
+    height: 0px;
 }
 
 /* ===== 更多菜单样式 ===== */
@@ -75,29 +82,29 @@ QMenu#more_menu::separator {
 /* ===== 今日专注时长标签 ===== */
 #timer_duration_laber {
     color: #1b4332;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     letter-spacing: 0.8px;
     padding: 8px 16px;
-    background-color: rgba(255, 255, 255, 0.6);
+    background-color: rgba(255, 255, 255, 0.75);
     border-radius: 16px;
-    border: 1px solid rgba(78, 204, 163, 0.2);
+    border: 1px solid rgba(78, 204, 163, 0.3);
 }
 
 /* ===== 循环次数标签 ===== */
 #cycle_label {
-    color: #2d5a45;
+    color: #1b4332;
     font-size: 15px;
     font-weight: 700;
     padding: 8px 16px;
-    background-color: rgba(255, 255, 255, 0.6);
+    background-color: rgba(255, 255, 255, 0.75);
     border-radius: 16px;
-    border: 1px solid rgba(78, 204, 163, 0.2);
+    border: 1px solid rgba(78, 204, 163, 0.3);
 }
 
 /* ===== 次要信息标签 ===== */
 #secondaryInfoLabel {
-    color: #406b52;
+    color: #244b36;
     font-size: 13px;
     font-weight: 600;
 }
@@ -108,7 +115,7 @@ QMenu#more_menu::separator {
         stop:0 #4ecca3, stop:1 #45b390);
     border: 3px solid #5ddbb9;
     padding: 20px 40px;
-    border-radius: 36px;
+    border-radius: 34px;
     color: #ffffff;
     font-size: 18px;
     font-weight: 800;
@@ -127,10 +134,10 @@ QMenu#more_menu::separator {
 
 /* ===== 结束任务按钮（次主按钮）===== */
 #finishButton {
-    background-color: rgba(255, 255, 255, 0.9);
-    border: 3px solid rgba(78, 204, 163, 0.4);
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 2.5px solid rgba(78, 204, 163, 0.5);
     padding: 20px 32px;
-    border-radius: 36px;
+    border-radius: 34px;
     color: #1b4332;
     font-size: 16px;
     font-weight: 700;
@@ -138,9 +145,69 @@ QMenu#more_menu::separator {
 }
 #finishButton:hover {
     background-color: rgba(255, 255, 255, 1);
-    border-color: rgba(78, 204, 163, 0.6);
+    border-color: rgba(78, 204, 163, 0.75);
 }
 #finishButton:pressed {
-    background-color: rgba(255, 255, 255, 0.7);
-    border-color: rgba(78, 204, 163, 0.3);
+    background-color: rgba(255, 255, 255, 0.8);
+    border-color: rgba(78, 204, 163, 0.35);
+}
+
+/* ===== 弹窗与消息提示框 (QMessageBox) ===== */
+QMessageBox {
+    background-color: #ffffff;
+    border: 2px solid #4ecca3;
+    border-radius: 14px;
+}
+QMessageBox QLabel {
+    color: #1b4332;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Microsoft YaHei UI', 'Segoe UI', sans-serif;
+    background: transparent;
+    min-height: 40px;
+    padding: 6px;
+}
+QMessageBox QPushButton {
+    padding: 8px 24px;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #4ecca3, stop:1 #45b390);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    min-width: 75px;
+    min-height: 24px;
+}
+QMessageBox QPushButton:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #5ddbb9, stop:1 #4ecca3);
+}
+QMessageBox QPushButton:pressed {
+    background: #3db38a;
+}
+QMessageBox QPushButton[text="No"], 
+QMessageBox QPushButton[text="否"], 
+QMessageBox QPushButton[text="取消"], 
+QMessageBox QPushButton[text="Cancel"] {
+    background: #f6f8fa;
+    color: #24292f;
+    border: 1.5px solid #d0d7de;
+}
+QMessageBox QPushButton[text="No"]:hover, 
+QMessageBox QPushButton[text="否"]:hover, 
+QMessageBox QPushButton[text="取消"]:hover, 
+QMessageBox QPushButton[text="Cancel"]:hover {
+    background: #e8eaed;
+    border-color: #afb8c1;
+}
+
+/* ===== 通用工具提示 (QToolTip) ===== */
+QToolTip {
+    background-color: #1b4332;
+    color: #ffffff;
+    border: 1.5px solid #4ecca3;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-family: 'Microsoft YaHei UI', 'Segoe UI', sans-serif;
+    font-weight: 500;
 }

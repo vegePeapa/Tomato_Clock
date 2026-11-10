@@ -16,8 +16,11 @@ from tomato_timer_widget import TomatoTimerWidget
 # 从 constants 模块导入共用常量
 from constants import (
     TimerMode, DATA_FILE_FULL_PATH, CONFIG_FILE_FULL_PATH,
-    DEFAULT_TASK_NAME, DEFAULT_CONFIG, DATA_FILE
+    DEFAULT_TASK_NAME, DEFAULT_CONFIG, DATA_FILE, ensure_ui_assets
 )
+
+# 确保必要的图标资源就绪
+ensure_ui_assets()
 
 def report(func):
     @wraps(func)
@@ -55,12 +58,14 @@ class TaskInputDialog(QDialog):
     def __init__(self, title: str, prompt: str, parent=None):
         super().__init__(parent)
         self.setWindowTitle(title)
-        self.setFixedSize(400, 180)
+        self.setMinimumSize(420, 200)
+        self.resize(420, 210)
         self.result_text = ""
         self.setStyleSheet("""
             QDialog {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
                     stop:0 #f5fcf8, stop:1 #ffffff);
+                border: 1px solid rgba(78, 204, 163, 0.3);
             }
         """)
         self._setup_ui(prompt)
@@ -68,15 +73,16 @@ class TaskInputDialog(QDialog):
     def _setup_ui(self, prompt: str):
         layout = QVBoxLayout(self)
         layout.setSpacing(16)
-        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setContentsMargins(28, 24, 28, 24)
 
         # 提示标签
         prompt_label = QLabel(prompt)
         prompt_label.setStyleSheet("""
             QLabel {
-                color: #24292f;
+                color: #1b4332;
                 font-size: 15px;
-                font-weight: 600;
+                font-weight: 700;
+                background: transparent;
             }
         """)
         layout.addWidget(prompt_label)
@@ -84,52 +90,65 @@ class TaskInputDialog(QDialog):
         # 输入框
         from PyQt6.QtWidgets import QLineEdit
         self.input_field = QLineEdit()
-      
+        self.input_field.setPlaceholderText("请输入任务名称（例如：背单词、写代码）...")
         self.input_field.setStyleSheet("""
             QLineEdit {
-                padding: 12px 16px;
+                padding: 10px 14px;
+                min-height: 22px;
                 border: 2px solid #d0d7de;
                 border-radius: 8px;
                 background-color: #ffffff;
                 color: #1a1a2e;
                 font-size: 14px;
-                
+                font-weight: 500;
+                selection-background-color: #4ecca3;
+                selection-color: #ffffff;
+            }
+            QLineEdit:hover {
+                border-color: #b0b7be;
             }
             QLineEdit:focus {
                 border-color: #4ecca3;
+                background-color: #ffffff;
             }
         """)
-        # 设置占位符文字颜色为深灰色（白色背景下可见）
-        # # self.input_field.setText("输入任务名称...")
-        # self.input_field.selectAll()  # 选中文字，用户打字时自动清除
         layout.addWidget(self.input_field)
 
         # 按钮区域
         button_layout = QHBoxLayout()
+        button_layout.setSpacing(12)
         button_layout.addStretch()
 
         cancel_btn = QPushButton("取消")
+        cancel_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         cancel_btn.setStyleSheet("""
             QPushButton {
-                padding: 10px 24px;
+                padding: 8px 24px;
                 background-color: #f6f8fa;
                 color: #24292f;
-                border: 2px solid #d0d7de;
+                border: 1.5px solid #d0d7de;
                 border-radius: 8px;
                 font-size: 14px;
-                font-weight: 700;
+                font-weight: 600;
+                min-height: 24px;
             }
             QPushButton:hover {
                 background-color: #e8eaed;
+                border-color: #afb8c1;
+            }
+            QPushButton:pressed {
+                background-color: #d0d7de;
             }
         """)
         cancel_btn.clicked.connect(self.reject)
         button_layout.addWidget(cancel_btn)
 
         ok_btn = QPushButton("确定")
+        ok_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        ok_btn.setDefault(True)
         ok_btn.setStyleSheet("""
             QPushButton {
-                padding: 10px 24px;
+                padding: 8px 26px;
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                     stop:0 #4ecca3, stop:1 #45b390);
                 color: #ffffff;
@@ -137,10 +156,15 @@ class TaskInputDialog(QDialog):
                 border-radius: 8px;
                 font-size: 14px;
                 font-weight: 700;
+                min-height: 24px;
             }
             QPushButton:hover {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                     stop:0 #5ddbb9, stop:1 #4ecca3);
+            }
+            QPushButton:pressed {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #3db38a, stop:1 #349571);
             }
         """)
         ok_btn.clicked.connect(self._accept)
@@ -173,7 +197,7 @@ class SettingsDialog(QDialog):
         self.setObjectName("SettingsDialog")  # 设置对象名称匹配 QSS 选择器
         self.config = config.copy()  # 复制配置以便取消时不影响原配置
         self.setWindowTitle("设置")
-        self.setFixedSize(500, 450)
+        self.setFixedSize(500, 440)
         self._setup_ui()
         self._load_config()
 
@@ -183,7 +207,8 @@ class SettingsDialog(QDialog):
         if os.path.exists(qss_path):
             try:
                 with open(qss_path, "r", encoding="utf-8") as f:
-                    self.setStyleSheet(f.read())
+                    qss_content = f.read().replace("{ASSET_DIR}", script_dir.replace("\\", "/"))
+                    self.setStyleSheet(qss_content)
             except Exception as e:
                 print(f"加载设置样式表失败: {e}")
 
@@ -192,7 +217,7 @@ class SettingsDialog(QDialog):
         """初始化设置界面 - 使用选项卡布局"""
         main_layout = QVBoxLayout(self)
         main_layout.setSpacing(0)
-        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setContentsMargins(16, 16, 16, 16)
 
         # 创建选项卡
         tab_widget = QTabWidget()
@@ -224,12 +249,14 @@ class SettingsDialog(QDialog):
         cancel_btn = QPushButton("取消")
         cancel_btn.setObjectName("cancelButton")
         cancel_btn.setFixedWidth(100)
+        cancel_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         cancel_btn.clicked.connect(self.reject)
         button_layout.addWidget(cancel_btn)
 
         save_btn = QPushButton("保存")
         save_btn.setObjectName("saveButton")
         save_btn.setFixedWidth(100)
+        save_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         save_btn.clicked.connect(self._save_and_accept)
         button_layout.addWidget(save_btn)
 
@@ -240,7 +267,7 @@ class SettingsDialog(QDialog):
         widget = QWidget()
         layout = QVBoxLayout(widget)
         layout.setSpacing(20)
-        layout.setContentsMargins(30, 30, 30, 30)
+        layout.setContentsMargins(24, 24, 24, 24)
 
         # 专注时长
         self.focus_spin = self._create_spinbox_row(
@@ -271,33 +298,37 @@ class SettingsDialog(QDialog):
         """创建声音设置选项卡"""
         widget = QWidget()
         layout = QVBoxLayout(widget)
-        layout.setSpacing(20)
-        layout.setContentsMargins(30, 30, 30, 30)
+        layout.setSpacing(24)
+        layout.setContentsMargins(24, 24, 24, 24)
 
         # 启用声音
         self.sound_checkbox = QCheckBox("启用提示音")
+        self.sound_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
         layout.addWidget(self.sound_checkbox)
 
         # 音量控制
         volume_layout = QHBoxLayout()
-        volume_layout.setSpacing(12)
+        volume_layout.setSpacing(16)
 
-        volume_label = QLabel("音量")
-        volume_label.setMinimumWidth(100)
+        volume_label = QLabel("提示声音量")
+        volume_label.setFixedWidth(110)
         volume_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         volume_layout.addWidget(volume_label)
 
         self.volume_slider = QSlider(Qt.Orientation.Horizontal)
         self.volume_slider.setRange(0, 100)
+        self.volume_slider.setCursor(Qt.CursorShape.PointingHandCursor)
         self.volume_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
         self.volume_slider.setTickInterval(20)
+        self.volume_slider.setFixedWidth(180)
         volume_layout.addWidget(self.volume_slider)
 
         self.volume_label = QLabel("80%")
         self.volume_label.setMinimumWidth(50)
-        self.volume_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.volume_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         volume_layout.addWidget(self.volume_label)
 
+        volume_layout.addStretch()
         layout.addLayout(volume_layout)
 
         # 连接音量滑块信号
@@ -314,12 +345,14 @@ class SettingsDialog(QDialog):
         widget = QWidget()
         layout = QVBoxLayout(widget)
         layout.setSpacing(20)
-        layout.setContentsMargins(30, 30, 30, 30)
+        layout.setContentsMargins(24, 24, 24, 24)
 
         self.auto_break_checkbox = QCheckBox("专注结束后自动开始休息")
+        self.auto_break_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
         layout.addWidget(self.auto_break_checkbox)
 
         self.auto_focus_checkbox = QCheckBox("休息结束后自动开始专注")
+        self.auto_focus_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
         layout.addWidget(self.auto_focus_checkbox)
 
         layout.addStretch()
@@ -343,11 +376,11 @@ class SettingsDialog(QDialog):
             创建的 QSpinBox 控件
         """
         row_layout = QHBoxLayout()
-        row_layout.setSpacing(12)
+        row_layout.setSpacing(16)
 
         # 标签
         label = QLabel(label_text)
-        label.setMinimumWidth(100)
+        label.setFixedWidth(110)
         label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         row_layout.addWidget(label)
 
@@ -356,7 +389,17 @@ class SettingsDialog(QDialog):
         spinbox.setRange(min_val, max_val)
         spinbox.setSingleStep(step)
         spinbox.setSuffix(suffix)
-        spinbox.setMinimumWidth(120)
+        spinbox.setFixedWidth(140)
+
+        if tooltip:
+            spinbox.setToolTip(tooltip)
+
+        row_layout.addWidget(spinbox)
+        row_layout.addStretch()
+
+        parent_layout.addLayout(row_layout)
+
+        return spinbox
 
         if tooltip:
             spinbox.setToolTip(tooltip)
@@ -618,7 +661,8 @@ class TimerWindow(QDialog):
         if os.path.exists(qss_path):
             try:
                 with open(qss_path, "r", encoding="utf-8") as f:
-                    self.setStyleSheet(f.read())
+                    qss_content = f.read().replace("{ASSET_DIR}", script_dir.replace("\\", "/"))
+                    self.setStyleSheet(qss_content)
                 print(f"✓ 已加载并应用模式样式表: {qss_file}")
             except Exception as e:
                 print(f"✗ 无法加载模式样式表 {qss_file}: {e}")
@@ -670,7 +714,7 @@ class TimerWindow(QDialog):
             self.config = dialog.get_config()
             self._save_config()
             self._apply_config()
-            QMessageBox.information(self, "设置", '<span style="color:black">设置已保存！下次重置后生效。<\span>')
+            QMessageBox.information(self, "设置", "设置已保存！下次重置后生效。")
 
     def _apply_config(self):
         """应用配置到当前实例"""
@@ -720,7 +764,7 @@ class TimerWindow(QDialog):
             if not self.task_choice_remember:
                 # 没有记住选择 询问是否休息和用户是否记住
                 reply = QMessageBox.question(
-                    self, "休息吗", '<span style="color:black">是否休息？</span>', QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                    self, "休息吗", "是否休息？", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
 
                 # 保存用户的选择
                 if reply == QMessageBox.StandardButton.Yes:
@@ -730,7 +774,7 @@ class TimerWindow(QDialog):
 
                 # 询问是否记住选择
                 remember_reply = QMessageBox.question(
-                    self, "记住我的选择", '<span style="color:black">是否记住我的选择？</span>', QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                    self, "记住我的选择", "是否记住我的选择？", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
 
                 if remember_reply == QMessageBox.StandardButton.Yes:
                     self.task_choice_remember = True
@@ -752,7 +796,7 @@ class TimerWindow(QDialog):
         self.is_running = False
         text, ok = TaskInputDialog.getText(self, 
                                         "输入任务名",
-                                        '<span style="color: black;">请输入下一个任务名称：</span>'
+                                        "请输入下一个任务名称："
                                         )
         # 记录新的专注时段的开始时间
         self.current_focus_start_time = QDateTime.currentDateTime()
@@ -776,7 +820,7 @@ class TimerWindow(QDialog):
                 if self.duration_task_name == DEFAULT_TASK_NAME:
                     # 使用图形界面输入对话框询问当前任务
                     text, ok = TaskInputDialog.getText(
-                        self, "输入任务名", '<span style="color:black">请输入当前任务名称：<\span>')
+                        self, "输入任务名", "请输入当前任务名称：")
                     if ok and text.strip():
                         self.duration_task_name = text.strip()
                     else:

@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QDate, QTimer, QPropertyAnimation, QEasingCurve, QSize
 from PyQt6.QtGui import QPainter, QColor, QFont, QPen
-from constants import DATA_FILE_FULL_PATH
+from constants import DATA_FILE_FULL_PATH, TimerMode
 # 导入原有的时间轴组件
 from paint import TimelineWidget
 
@@ -28,7 +28,7 @@ class CalendarCell(QFrame):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
         # 计算当天的统计信息
-        self.focus_tasks = [t for t in self.day_data if t.get("mode") == "专注"]
+        self.focus_tasks = [t for t in self.day_data if t.get("mode") in (TimerMode.FOCUS, TimerMode.CANCELLED)]
         self.total_duration = sum(t.get("duration", 0) for t in self.focus_tasks)
         # 按任务名称去重统计（统计所有模式的任务）
         task_names = set(t.get("task-name", "未命名") for t in self.day_data)
@@ -93,13 +93,13 @@ class CalendarCell(QFrame):
             count_label = QLabel(f"📋 {self.task_count}个")
             count_label.setFont(QFont("Microsoft YaHei", 8))  # 减小字体
             count_label.setAlignment(Qt.AlignmentFlag.AlignRight)
-            count_label.setStyleSheet(f"color: {self.text_color}; opacity: 0.8;")
+            count_label.setStyleSheet(f"color: {self.text_color}; font-weight: 600;")
             layout.addWidget(count_label)
         else:
             no_data_label = QLabel("😴 无记录")
             no_data_label.setFont(QFont("Microsoft YaHei", 10))  # 减小字体
             no_data_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            no_data_label.setStyleSheet("color: #999;")
+            no_data_label.setStyleSheet("color: #6b7280; font-weight: 500;")
             layout.addWidget(no_data_label)
             layout.addStretch()
 
@@ -343,7 +343,7 @@ class DetailPanel(QFrame):
             self.date_label.setText(f"📅 {date_str}")
 
         # 计算统计数据
-        focus_tasks = [t for t in day_data if t.get("mode") == "专注"]
+        focus_tasks = [t for t in day_data if t.get("mode") in (TimerMode.FOCUS, TimerMode.CANCELLED)]
         total_duration = sum(t.get("duration", 0) for t in focus_tasks)
         # 按任务名称去重统计
         task_names = set(t.get("task-name", "未命名") for t in focus_tasks)
@@ -513,7 +513,7 @@ class CalendarTimelineWindow(QMainWindow):
 
         for date_str, tasks in self.data.items():
             if date_str.startswith(month_key):
-                focus_tasks = [t for t in tasks if t.get("mode") == "专注"]
+                focus_tasks = [t for t in tasks if t.get("mode") in (TimerMode.FOCUS, TimerMode.CANCELLED)]
                 if focus_tasks:
                     days_with_data += 1
                     total_tasks += len(focus_tasks)

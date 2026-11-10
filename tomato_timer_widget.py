@@ -135,9 +135,11 @@ class TomatoTimerWidget(QWidget):
             progress = 1.0
         self._draw_progress_ring(painter, center, base_radius * 1.3, progress)
 
-        # 暂停时添加半透明遮罩
+        # 暂停时添加半透明遮罩与状态指示，运行时显示清晰倒计时数字
         if not self._is_running:
             self._draw_pause_overlay(painter, center, base_radius)
+        else:
+            self._draw_time_display(painter, tomato_center, base_radius * breath_scale)
 
     def _draw_relax_mode(self, painter, center):
         """绘制休息模式 - 橙色番茄"""
@@ -164,6 +166,12 @@ class TomatoTimerWidget(QWidget):
             progress = 1.0
         self._draw_progress_ring(painter, center, base_radius * 1.3, progress,
                                 ring_color=QColor(102, 187, 106))
+
+        # 暂停时添加半透明遮罩与状态指示，运行时显示清晰倒计时数字
+        if not self._is_running:
+            self._draw_pause_overlay(painter, center, base_radius)
+        else:
+            self._draw_time_display(painter, tomato_center, base_radius * breath_scale)
 
     def _draw_cancelled_mode(self, painter, center):
         """绘制取消模式 - 灰色番茄"""
@@ -196,9 +204,11 @@ class TomatoTimerWidget(QWidget):
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawEllipse(center, base_radius * 1.3, base_radius * 1.3)
 
-        # 暂停时添加半透明遮罩
+        # 暂停时添加半透明遮罩与状态指示，运行时显示清晰倒计时数字
         if not self._is_running:
             self._draw_pause_overlay(painter, center, base_radius)
+        else:
+            self._draw_time_display(painter, tomato_center, base_radius)
 
     def _draw_tomato_body(self, painter, center, radius, is_running=True,
                          is_relax=False, is_cancelled=False):
@@ -368,37 +378,61 @@ class TomatoTimerWidget(QWidget):
         """已停用Zzz睡觉气泡"""
         pass
 
+    def _draw_time_display(self, painter, center, radius, is_paused=False):
+        """在番茄中央绘制清晰倒计时时间"""
+        if self._mode == "cancelled":
+            text = "自由专注"
+            font_size = max(13, int(radius * 0.25))
+        else:
+            minutes = max(0, self._remaining_seconds) // 60
+            seconds = max(0, self._remaining_seconds) % 60
+            text = f"{minutes:02d}:{seconds:02d}"
+            font_size = max(18, int(radius * 0.36))
+
+        font = QFont("Microsoft YaHei UI", font_size, QFont.Weight.Bold)
+        painter.setFont(font)
+
+        # 计算文字偏移（如果暂停，稍微下移以留出暂停图标空间）
+        y_offset = radius * 0.08 if is_paused else 0
+        text_rect = QRectF(center.x() - radius * 0.85,
+                           center.y() - radius * 0.28 + y_offset,
+                           radius * 1.7, radius * 0.56)
+
+        # 文字背景药丸微光，保证无论何种番茄色彩都极致清晰
+        pill_rect = QRectF(text_rect.x() + radius * 0.1, text_rect.y() + radius * 0.05,
+                           text_rect.width() - radius * 0.2, text_rect.height() - radius * 0.1)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QColor(0, 0, 0, 45 if not is_paused else 70))
+        painter.drawRoundedRect(pill_rect, pill_rect.height() / 2, pill_rect.height() / 2)
+
+        # 绘制主文字
+        painter.setPen(QColor(255, 255, 255, 250))
+        painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, text)
+
     def _draw_pause_overlay(self, painter, center, radius):
-        """绘制通用的暂停半透明遮罩"""
+        """绘制通用的暂停半透明遮罩与状态指示"""
         # 创建半透明遮罩层
         overlay_path = QPainterPath()
-        overlay_rect = QRectF(center.x() - radius * 1.2, center.y() - radius * 1.2,
-                             radius * 2.4, radius * 2.4)
+        overlay_rect = QRectF(center.x() - radius * 1.05, center.y() - radius * 0.95,
+                             radius * 2.1, radius * 1.9)
         overlay_path.addEllipse(overlay_rect)
+        painter.fillPath(overlay_path, QColor(0, 0, 0, 45))
 
-        # 半透明深色遮罩（让番茄看起来"睡着了"）
-        overlay_color = QColor(0, 0, 0, 40)
-        painter.fillPath(overlay_path, overlay_color)
-
-        # 在番茄中央绘制暂停符号 ||
-        pause_bar_width = radius * 0.15
-        pause_bar_height = radius * 0.4
-        pause_spacing = radius * 0.15
+        # 小巧精致的暂停标志放在时间上方
+        pause_h = radius * 0.18
+        pause_w = radius * 0.06
+        pause_spacing = radius * 0.07
+        pause_y = center.y() - radius * 0.38
 
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor(255, 255, 255, 180))
+        painter.setBrush(QColor(255, 255, 255, 220))
+        p1 = QRectF(center.x() - pause_spacing/2 - pause_w, pause_y, pause_w, pause_h)
+        p2 = QRectF(center.x() + pause_spacing/2, pause_y, pause_w, pause_h)
+        painter.drawRoundedRect(p1, 2, 2)
+        painter.drawRoundedRect(p2, 2, 2)
 
-        # 左边的竖线
-        left_bar = QRectF(center.x() - pause_spacing/2 - pause_bar_width,
-                         center.y() - pause_bar_height/2,
-                         pause_bar_width, pause_bar_height)
-        painter.drawRoundedRect(left_bar, 3, 3)
-
-        # 右边的竖线
-        right_bar = QRectF(center.x() + pause_spacing/2,
-                          center.y() - pause_bar_height/2,
-                          pause_bar_width, pause_bar_height)
-        painter.drawRoundedRect(right_bar, 3, 3)
+        # 绘制倒计时
+        self._draw_time_display(painter, center, radius, is_paused=True)
 
     def _draw_progress_ring(self, painter, center, radius, progress,
                            ring_color=None):

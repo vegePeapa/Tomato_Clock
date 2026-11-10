@@ -1,7 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('style.qss', '.')]
+datas = [
+    ('focus.qss', '.'),
+    ('relax.qss', '.'),
+    ('settings.qss', '.'),
+    ('arrow_up.png', '.'),
+    ('arrow_down.png', '.'),
+    ('checkbox_checked.png', '.'),
+]
 binaries = []
 hiddenimports = []
 tmp_ret = collect_all('PyQt6')
@@ -37,6 +44,7 @@ exe = EXE(
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,
+    icon='icon.ico',
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

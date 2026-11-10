@@ -425,11 +425,11 @@ class TimelineCanvas(QWidget):
                 
                 # HTML 富文本排版
                 tooltip_html = f"""
-                <table style='border-spacing: 0px 4px; font-size: 11px;'>
+                <table style='border-spacing: 0px 5px; font-size: 12px;'>
                     <tr><td colspan='2' style='font-size: 13px; font-weight: bold; color: #1b4332; padding-bottom: 4px;'>🏷️ {task_name}</td></tr>
-                    <tr><td style='color: #7f8c8d; font-weight: bold; padding-right: 6px;'>🧭 模式:</td><td style='color: {mode_color}; font-weight: bold;'>{mode_icon} {mode}</td></tr>
-                    <tr><td style='color: #7f8c8d; font-weight: bold;'>⏰ 时间:</td><td style='color: #2c3e50;'>{start} - {end}</td></tr>
-                    <tr><td style='color: #7f8c8d; font-weight: bold;'>⏳ 时长:</td><td style='color: #2e7d32; font-weight: bold;'>{minutes} 分钟</td></tr>
+                    <tr><td style='color: #4b5563; font-weight: bold; padding-right: 8px;'>🧭 模式:</td><td style='color: {mode_color}; font-weight: bold;'>{mode_icon} {mode}</td></tr>
+                    <tr><td style='color: #4b5563; font-weight: bold;'>⏰ 时间:</td><td style='color: #1f2937; font-weight: bold;'>{start} - {end}</td></tr>
+                    <tr><td style='color: #4b5563; font-weight: bold;'>⏳ 时长:</td><td style='color: #2e7d32; font-weight: bold;'>{minutes} 分钟</td></tr>
                 </table>
                 """
 
