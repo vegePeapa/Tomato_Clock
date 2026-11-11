@@ -171,6 +171,30 @@ QCheckBox::indicator:checked {
     border-color: #4ecca3;
 }
 
+/* ===== 设置分组卡片 ===== */
+QWidget#settingsCard {
+    background-color: #ffffff;
+    border: 1.5px solid rgba(78, 204, 163, 0.35);
+    border-radius: 10px;
+}
+
+/* ===== 分组与行标签样式 ===== */
+QLabel#sectionHeader {
+    font-size: 13px;
+    font-weight: 700;
+    color: #2d6a4f;
+    padding: 2px 2px;
+}
+QLabel#rowTitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1b4332;
+}
+QLabel#rowDesc {
+    font-size: 12px;
+    color: #5c7065;
+}
+
 /* ===== 底部按钮 ===== */
 QPushButton {
     padding: 8px 24px;
@@ -178,6 +202,30 @@ QPushButton {
     font-weight: 700;
     font-size: 14px;
     min-height: 22px;
+}
+#previewSoundButton {
+    padding: 2px 10px;
+    min-width: 50px;
+    max-width: 70px;
+    min-height: 24px;
+    background-color: rgba(78, 204, 163, 0.15);
+    color: #1b4332;
+    border: 1.5px solid rgba(78, 204, 163, 0.4);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+}
+#previewSoundButton:hover {
+    background-color: rgba(78, 204, 163, 0.3);
+    border-color: #4ecca3;
+}
+#previewSoundButton:pressed {
+    background-color: rgba(78, 204, 163, 0.5);
+}
+#previewSoundButton:disabled {
+    background-color: #f0f0f0;
+    color: #a0a0a0;
+    border-color: #dcdcdc;
 }
 #saveButton {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,

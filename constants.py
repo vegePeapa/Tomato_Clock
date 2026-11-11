@@ -16,6 +16,8 @@ DEFAULT_CONFIG = {
     "sound_volume": 80,        # 音量(0-100)
     "auto_start_break": False,  # 自动开始休息
     "auto_start_focus": False,  # 自动开始专注
+    "minimize_to_tray": False,  # 最小化时隐藏到系统托盘
+    "close_to_tray": False,     # 关闭窗口时最小化到系统托盘
 }
 
 

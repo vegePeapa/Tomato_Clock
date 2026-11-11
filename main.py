@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QLabel, QSpinBox, QCheckBox, QPushButton,
     QMenu, QSlider, QWidget, QTabWidget
 )
-from PyQt6.QtCore import QTimer, Qt, QDateTime, QUrl
+from PyQt6.QtCore import QTimer, Qt, QDateTime, QUrl, QEvent
 from PyQt6.QtGui import QCloseEvent, QIcon, QAction, QFont
 from PyQt6.QtMultimedia import QSoundEffect
 from ui_timer import Ui_Timer
@@ -197,31 +197,52 @@ class SettingsDialog(QDialog):
         self.setObjectName("SettingsDialog")  # 设置对象名称匹配 QSS 选择器
         self.config = config.copy()  # 复制配置以便取消时不影响原配置
         self.setWindowTitle("设置")
-        self.setFixedSize(500, 440)
+        self.setFixedSize(540, 520)
+
+        # 程序目录与音效试听初始化
+        self.script_dir = os.path.dirname(os.path.abspath(__file__))
+        self._init_sound_preview()
+
         self._setup_ui()
         self._load_config()
 
         # 加载设置界面专用样式
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        qss_path = os.path.join(script_dir, "settings.qss")
+        qss_path = os.path.join(self.script_dir, "settings.qss")
         if os.path.exists(qss_path):
             try:
                 with open(qss_path, "r", encoding="utf-8") as f:
-                    qss_content = f.read().replace("{ASSET_DIR}", script_dir.replace("\\", "/"))
+                    qss_content = f.read().replace("{ASSET_DIR}", self.script_dir.replace("\\", "/"))
                     self.setStyleSheet(qss_content)
             except Exception as e:
                 print(f"加载设置样式表失败: {e}")
 
+    def _init_sound_preview(self):
+        """初始化用于设置界面试听的音效"""
+        self.preview_sound = None
+        try:
+            sound_paths = [
+                os.path.join(self.script_dir, "notification.wav"),
+                "C:/Windows/Media/Windows Notify System Generic.wav",
+                "C:/Windows/Media/chimes.wav",
+            ]
+            for p in sound_paths:
+                if os.path.exists(p):
+                    self.preview_sound = QSoundEffect()
+                    self.preview_sound.setSource(QUrl.fromLocalFile(p))
+                    break
+        except Exception:
+            self.preview_sound = None
 
     def _setup_ui(self):
         """初始化设置界面 - 使用选项卡布局"""
         main_layout = QVBoxLayout(self)
         main_layout.setSpacing(0)
-        main_layout.setContentsMargins(16, 16, 16, 16)
+        main_layout.setContentsMargins(18, 16, 18, 14)
 
         # 创建选项卡
         tab_widget = QTabWidget()
         tab_widget.setObjectName("settingsTabWidget")
+        self.tab_widget = tab_widget
 
         # 添加各个选项卡
         time_tab = self._create_time_settings_tab()
@@ -231,65 +252,152 @@ class SettingsDialog(QDialog):
         tab_widget.addTab(sound_tab, "声音设置")
 
         auto_tab = self._create_auto_settings_tab()
-        tab_widget.addTab(auto_tab, "自动化")
+        tab_widget.addTab(auto_tab, "常规与自动化")
 
         main_layout.addWidget(tab_widget)
 
         # 添加底部分隔线和按钮区域
         line_widget = QWidget()
         line_widget.setFixedHeight(1)
-        line_widget.setStyleSheet("background-color: #d0d7de;")
+        line_widget.setStyleSheet("background-color: rgba(78, 204, 163, 0.25);")
         main_layout.addWidget(line_widget)
 
         button_layout = QHBoxLayout()
         button_layout.setSpacing(12)
-        button_layout.setContentsMargins(20, 16, 20, 16)
+        button_layout.setContentsMargins(10, 12, 10, 4)
         button_layout.addStretch()
 
         cancel_btn = QPushButton("取消")
         cancel_btn.setObjectName("cancelButton")
-        cancel_btn.setFixedWidth(100)
+        cancel_btn.setFixedWidth(96)
         cancel_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         cancel_btn.clicked.connect(self.reject)
         button_layout.addWidget(cancel_btn)
 
         save_btn = QPushButton("保存")
         save_btn.setObjectName("saveButton")
-        save_btn.setFixedWidth(100)
+        save_btn.setFixedWidth(96)
+        save_btn.setDefault(True)
         save_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         save_btn.clicked.connect(self._save_and_accept)
         button_layout.addWidget(save_btn)
 
         main_layout.addLayout(button_layout)
 
+    def _create_section_header(self, text: str) -> QLabel:
+        """创建卡片区域的标题"""
+        lbl = QLabel(text)
+        lbl.setObjectName("sectionHeader")
+        return lbl
+
+    def _create_card(self) -> QWidget:
+        """创建卡片容器"""
+        card = QWidget()
+        card.setObjectName("settingsCard")
+        return card
+
+    def _create_row(self, title: str, desc: str, control: QWidget) -> QWidget:
+        """创建带标题、描述和控制组件的标准行"""
+        row = QWidget()
+        layout = QHBoxLayout(row)
+        layout.setContentsMargins(0, 4, 0, 4)
+        layout.setSpacing(12)
+
+        t_layout = QVBoxLayout()
+        t_layout.setSpacing(2)
+        t_lbl = QLabel(title)
+        t_lbl.setObjectName("rowTitle")
+        t_layout.addWidget(t_lbl)
+        if desc:
+            d_lbl = QLabel(desc)
+            d_lbl.setObjectName("rowDesc")
+            t_layout.addWidget(d_lbl)
+        layout.addLayout(t_layout)
+
+        layout.addStretch()
+        layout.addWidget(control)
+        return row
+
+    def _create_checkbox_row(self, checkbox: QCheckBox, desc: str) -> QWidget:
+        """创建带下属说明的复选框行"""
+        row = QWidget()
+        layout = QVBoxLayout(row)
+        layout.setContentsMargins(0, 4, 0, 4)
+        layout.setSpacing(2)
+        layout.addWidget(checkbox)
+        if desc:
+            d_lbl = QLabel(desc)
+            d_lbl.setObjectName("rowDesc")
+            d_lbl.setStyleSheet("margin-left: 30px;")
+            layout.addWidget(d_lbl)
+        return row
+
+    def _create_inner_divider(self) -> QWidget:
+        """创建卡片内的微细分隔线"""
+        line = QWidget()
+        line.setFixedHeight(1)
+        line.setStyleSheet("background-color: rgba(78, 204, 163, 0.15); margin: 2px 0;")
+        return line
+
     def _create_time_settings_tab(self):
         """创建时间设置选项卡"""
         widget = QWidget()
         layout = QVBoxLayout(widget)
-        layout.setSpacing(20)
-        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(12)
+        layout.setContentsMargins(16, 16, 16, 16)
+
+        # 区域 1：番茄节奏配置
+        layout.addWidget(self._create_section_header("番茄节奏"))
+        card1 = self._create_card()
+        c1_layout = QVBoxLayout(card1)
+        c1_layout.setContentsMargins(16, 10, 16, 10)
+        c1_layout.setSpacing(8)
 
         # 专注时长
-        self.focus_spin = self._create_spinbox_row(
-            layout, "专注时长", 5, 90, 5, " 分钟"
-        )
+        self.focus_spin = QSpinBox()
+        self.focus_spin.setRange(5, 90)
+        self.focus_spin.setSingleStep(5)
+        self.focus_spin.setSuffix(" 分钟")
+        self.focus_spin.setFixedWidth(120)
+        c1_layout.addWidget(self._create_row("专注时长", "单次番茄钟专注工作时长", self.focus_spin))
+
+        c1_layout.addWidget(self._create_inner_divider())
 
         # 休息时长
-        self.relax_spin = self._create_spinbox_row(
-            layout, "休息时长", 1, 30, 1, " 分钟"
-        )
+        self.relax_spin = QSpinBox()
+        self.relax_spin.setRange(1, 30)
+        self.relax_spin.setSingleStep(1)
+        self.relax_spin.setSuffix(" 分钟")
+        self.relax_spin.setFixedWidth(120)
+        c1_layout.addWidget(self._create_row("休息时长", "专注结束后的短休息时长", self.relax_spin))
+
+        c1_layout.addWidget(self._create_inner_divider())
 
         # 循环次数
-        self.cycle_spin = self._create_spinbox_row(
-            layout, "循环次数", 1, 10, 1, " 次"
-        )
+        self.cycle_spin = QSpinBox()
+        self.cycle_spin.setRange(1, 10)
+        self.cycle_spin.setSingleStep(1)
+        self.cycle_spin.setSuffix(" 次")
+        self.cycle_spin.setFixedWidth(120)
+        c1_layout.addWidget(self._create_row("循环轮次", "一个完整大周期包含的专注次数", self.cycle_spin))
 
-        # 最大暂停时间
-        self.pause_spin = self._create_spinbox_row(
-            layout, "最大暂停时间", 1, 60, 1, " 分钟",
-            tooltip="超过此时间后继续将重置当前专注时段"
-        )
+        layout.addWidget(card1)
 
+        # 区域 2：超时机制
+        layout.addWidget(self._create_section_header("超时保护"))
+        card2 = self._create_card()
+        c2_layout = QVBoxLayout(card2)
+        c2_layout.setContentsMargins(16, 10, 16, 10)
+        c2_layout.setSpacing(8)
+
+        self.pause_spin = QSpinBox()
+        self.pause_spin.setRange(1, 60)
+        self.pause_spin.setSingleStep(1)
+        self.pause_spin.setSuffix(" 分钟")
+        self.pause_spin.setFixedWidth(120)
+        c2_layout.addWidget(self._create_row("最大暂停时间", "暂停超过此时长将自动结算并重置", self.pause_spin))
+
+        layout.addWidget(card2)
         layout.addStretch()
 
         return widget
@@ -298,119 +406,162 @@ class SettingsDialog(QDialog):
         """创建声音设置选项卡"""
         widget = QWidget()
         layout = QVBoxLayout(widget)
-        layout.setSpacing(24)
-        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(12)
+        layout.setContentsMargins(16, 16, 16, 16)
 
-        # 启用声音
+        layout.addWidget(self._create_section_header("提示音配置"))
+        card = self._create_card()
+        c_layout = QVBoxLayout(card)
+        c_layout.setContentsMargins(16, 12, 16, 12)
+        c_layout.setSpacing(10)
+
+        # 启用声音开关
         self.sound_checkbox = QCheckBox("启用提示音")
         self.sound_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
-        layout.addWidget(self.sound_checkbox)
+        self.sound_checkbox.setStyleSheet("font-size: 14px; font-weight: 700; color: #1b4332;")
+        c_layout.addWidget(self._create_checkbox_row(
+            self.sound_checkbox,
+            "在专注完成、休息结束或计时提醒时播放提示音"
+        ))
 
-        # 音量控制
-        volume_layout = QHBoxLayout()
-        volume_layout.setSpacing(16)
+        c_layout.addWidget(self._create_inner_divider())
 
-        volume_label = QLabel("提示声音量")
-        volume_label.setFixedWidth(110)
-        volume_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        volume_layout.addWidget(volume_label)
+        # 音量控制行
+        vol_row = QWidget()
+        vol_layout = QHBoxLayout(vol_row)
+        vol_layout.setContentsMargins(0, 4, 0, 4)
+        vol_layout.setSpacing(12)
+
+        vol_text_layout = QVBoxLayout()
+        vol_text_layout.setSpacing(2)
+        vol_title = QLabel("提示声音量")
+        vol_title.setObjectName("rowTitle")
+        vol_desc = QLabel("调整提示音播放音量大小")
+        vol_desc.setObjectName("rowDesc")
+        vol_text_layout.addWidget(vol_title)
+        vol_text_layout.addWidget(vol_desc)
+        vol_layout.addLayout(vol_text_layout)
+
+        vol_layout.addStretch()
 
         self.volume_slider = QSlider(Qt.Orientation.Horizontal)
         self.volume_slider.setRange(0, 100)
+        self.volume_slider.setFixedWidth(120)
         self.volume_slider.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.volume_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
-        self.volume_slider.setTickInterval(20)
-        self.volume_slider.setFixedWidth(180)
-        volume_layout.addWidget(self.volume_slider)
+        vol_layout.addWidget(self.volume_slider)
 
         self.volume_label = QLabel("80%")
-        self.volume_label.setMinimumWidth(50)
-        self.volume_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        volume_layout.addWidget(self.volume_label)
+        self.volume_label.setFixedWidth(38)
+        self.volume_label.setStyleSheet("font-size: 13px; font-weight: 600; color: #1b4332;")
+        vol_layout.addWidget(self.volume_label)
 
-        volume_layout.addStretch()
-        layout.addLayout(volume_layout)
+        self.preview_btn = QPushButton("试听")
+        self.preview_btn.setObjectName("previewSoundButton")
+        self.preview_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.preview_btn.clicked.connect(self._play_preview_sound)
+        vol_layout.addWidget(self.preview_btn)
 
-        # 连接音量滑块信号
-        self.volume_slider.valueChanged.connect(
-            lambda v: self.volume_label.setText(f"{v}%")
-        )
+        c_layout.addWidget(vol_row)
 
+        self.sound_checkbox.toggled.connect(self._on_sound_toggled)
+        self.volume_slider.valueChanged.connect(self._on_volume_changed)
+
+        layout.addWidget(card)
         layout.addStretch()
 
         return widget
 
+    def _on_sound_toggled(self, checked: bool):
+        """启用/禁用声音开关时联动音量控件状态"""
+        self.volume_slider.setEnabled(checked)
+        self.volume_label.setEnabled(checked)
+        if hasattr(self, 'preview_btn'):
+            self.preview_btn.setEnabled(checked)
+
+    def _on_volume_changed(self, val: int):
+        """音量滑动更新文本与试听音量"""
+        self.volume_label.setText(f"{val}%")
+        if self.preview_sound:
+            self.preview_sound.setVolume(val / 100.0)
+
+    def _play_preview_sound(self):
+        """试听当前设置的提示音效"""
+        if self.preview_sound:
+            self.preview_sound.setVolume(self.volume_slider.value() / 100.0)
+            self.preview_sound.play()
+
     def _create_auto_settings_tab(self):
-        """创建自动化设置选项卡"""
+        """创建常规与自动化设置选项卡"""
         widget = QWidget()
         layout = QVBoxLayout(widget)
-        layout.setSpacing(20)
-        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(12)
+        layout.setContentsMargins(16, 16, 16, 16)
+
+        # 分组 1：窗口与托盘
+        layout.addWidget(self._create_section_header("窗口与系统托盘"))
+        card1 = self._create_card()
+        c1_layout = QVBoxLayout(card1)
+        c1_layout.setContentsMargins(16, 10, 16, 10)
+        c1_layout.setSpacing(8)
+
+        self.minimize_to_tray_checkbox = QCheckBox("最小化时隐藏到系统托盘")
+        self.minimize_to_tray_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
+        c1_layout.addWidget(self._create_checkbox_row(
+            self.minimize_to_tray_checkbox,
+            "点击标题栏最小化按钮时，隐入右下角托盘图标"
+        ))
+
+        c1_layout.addWidget(self._create_inner_divider())
+
+        self.close_to_tray_checkbox = QCheckBox("关闭窗口时最小化到系统托盘（后台运行）")
+        self.close_to_tray_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
+        c1_layout.addWidget(self._create_checkbox_row(
+            self.close_to_tray_checkbox,
+            "点击窗口 [×] 时不退出程序，保持后台计时；可通过托盘菜单彻底退出"
+        ))
+
+        layout.addWidget(card1)
+
+        # 分组 2：流程自动化
+        layout.addWidget(self._create_section_header("流程自动化"))
+        card2 = self._create_card()
+        c2_layout = QVBoxLayout(card2)
+        c2_layout.setContentsMargins(16, 10, 16, 10)
+        c2_layout.setSpacing(8)
 
         self.auto_break_checkbox = QCheckBox("专注结束后自动开始休息")
         self.auto_break_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
-        layout.addWidget(self.auto_break_checkbox)
+        c2_layout.addWidget(self._create_checkbox_row(
+            self.auto_break_checkbox,
+            "专注时间归零时，无需手动操作即可直接进入休息阶段"
+        ))
+
+        c2_layout.addWidget(self._create_inner_divider())
 
         self.auto_focus_checkbox = QCheckBox("休息结束后自动开始专注")
         self.auto_focus_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
-        layout.addWidget(self.auto_focus_checkbox)
+        c2_layout.addWidget(self._create_checkbox_row(
+            self.auto_focus_checkbox,
+            "休息时间归零时，自动启动下一个番茄钟专注时段"
+        ))
 
+        layout.addWidget(card2)
         layout.addStretch()
 
         return widget
 
     def _create_spinbox_row(self, parent_layout, label_text, min_val, max_val,
                            step, suffix, tooltip=None):
-        """创建带标签的SpinBox行
-
-        Args:
-            parent_layout: 父布局
-            label_text: 标签文本
-            min_val: 最小值
-            max_val: 最大值
-            step: 步长
-            suffix: 后缀
-            tooltip: 工具提示（可选）
-
-        Returns:
-            创建的 QSpinBox 控件
-        """
-        row_layout = QHBoxLayout()
-        row_layout.setSpacing(16)
-
-        # 标签
-        label = QLabel(label_text)
-        label.setFixedWidth(110)
-        label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        row_layout.addWidget(label)
-
-        # SpinBox
+        """兼容旧接口的 SpinBox 行创建方法"""
         spinbox = QSpinBox()
         spinbox.setRange(min_val, max_val)
         spinbox.setSingleStep(step)
         spinbox.setSuffix(suffix)
-        spinbox.setFixedWidth(140)
-
+        spinbox.setFixedWidth(120)
         if tooltip:
             spinbox.setToolTip(tooltip)
-
-        row_layout.addWidget(spinbox)
-        row_layout.addStretch()
-
-        parent_layout.addLayout(row_layout)
-
+        parent_layout.addWidget(self._create_row(label_text, tooltip or "", spinbox))
         return spinbox
-
-        if tooltip:
-            spinbox.setToolTip(tooltip)
-
-        row_layout.addWidget(spinbox)
-        row_layout.addStretch()
-
-        parent_layout.addLayout(row_layout)
-
-        return spinbox
-        
 
     def _load_config(self):
         """ 从配置字典加载到UI控件 """
@@ -418,8 +569,18 @@ class SettingsDialog(QDialog):
         self.relax_spin.setValue(self.config.get("relax_duration", 5))
         self.cycle_spin.setValue(self.config.get("cycle_count", 2))
         self.pause_spin.setValue(self.config.get("max_pause_time", 10))
-        self.sound_checkbox.setChecked(self.config.get("sound_enabled", True))
-        self.volume_slider.setValue(self.config.get("sound_volume", 80))
+
+        sound_enabled = self.config.get("sound_enabled", True)
+        self.sound_checkbox.setChecked(sound_enabled)
+        vol = self.config.get("sound_volume", 80)
+        self.volume_slider.setValue(vol)
+        self.volume_label.setText(f"{vol}%")
+        self._on_sound_toggled(sound_enabled)
+
+        self.minimize_to_tray_checkbox.setChecked(
+            self.config.get("minimize_to_tray", False))
+        self.close_to_tray_checkbox.setChecked(
+            self.config.get("close_to_tray", False))
         self.auto_break_checkbox.setChecked(
             self.config.get("auto_start_break", False))
         self.auto_focus_checkbox.setChecked(
@@ -433,6 +594,8 @@ class SettingsDialog(QDialog):
         self.config["max_pause_time"] = self.pause_spin.value()
         self.config["sound_enabled"] = self.sound_checkbox.isChecked()
         self.config["sound_volume"] = self.volume_slider.value()
+        self.config["minimize_to_tray"] = self.minimize_to_tray_checkbox.isChecked()
+        self.config["close_to_tray"] = self.close_to_tray_checkbox.isChecked()
         self.config["auto_start_break"] = self.auto_break_checkbox.isChecked()
         self.config["auto_start_focus"] = self.auto_focus_checkbox.isChecked()
         self.accept()
@@ -445,6 +608,22 @@ class SettingsDialog(QDialog):
 class TimerWindow(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
+
+        # 目录与标记初始化
+        self.script_dir = os.path.dirname(os.path.abspath(__file__))
+        self._force_quit = False
+
+        # 设置窗口标志：允许任务栏最小化和关闭，但不显示最大化按钮
+        self.setWindowFlags(
+            Qt.WindowType.Window |
+            Qt.WindowType.WindowMinimizeButtonHint |
+            Qt.WindowType.WindowCloseButtonHint
+        )
+
+        # 设置窗口图标
+        icon_path = os.path.join(self.script_dir, "icon.ico")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
 
         # UI 初始化
         self.ui = Ui_Timer()
@@ -490,9 +669,20 @@ class TimerWindow(QDialog):
         self.more_menu.addAction(reset_action)
 
         # 取消番茄钟
-        cancel_action = QAction("取消番茄钟", self)
-        cancel_action.triggered.connect(self._cancel_tomato_clock)
-        self.more_menu.addAction(cancel_action)
+        self.cancel_action = QAction("取消番茄钟", self)
+        self.cancel_action.triggered.connect(self._cancel_tomato_clock)
+        self.more_menu.addAction(self.cancel_action)
+
+        self.more_menu.addSeparator()
+
+        # 最小化选项
+        min_taskbar_action = QAction("最小化到任务栏", self)
+        min_taskbar_action.triggered.connect(self.showMinimized)
+        self.more_menu.addAction(min_taskbar_action)
+
+        min_tray_action = QAction("最小化到系统托盘", self)
+        min_tray_action.triggered.connect(self._minimize_to_tray)
+        self.more_menu.addAction(min_tray_action)
 
         self.more_menu.addSeparator()
 
@@ -595,7 +785,11 @@ class TimerWindow(QDialog):
         """初始化系统托盘图标和菜单"""
         if QSystemTrayIcon.isSystemTrayAvailable():
             self.tray_icon = QSystemTrayIcon(self)
-            self.tray_icon.setIcon(QIcon())  # 可以设置一个图标
+            icon_path = os.path.join(self.script_dir, "icon.ico")
+            if os.path.exists(icon_path):
+                self.tray_icon.setIcon(QIcon(icon_path))
+            else:
+                self.tray_icon.setIcon(self.windowIcon())
             self.tray_icon.setToolTip("番茄钟计时器")
 
             # 创建托盘菜单
@@ -615,8 +809,13 @@ class TimerWindow(QDialog):
 
             # 显示窗口
             show_action = QAction("显示窗口", self)
-            show_action.triggered.connect(self.show)
+            show_action.triggered.connect(self._show_and_activate)
             tray_menu.addAction(show_action)
+
+            # 最小化到托盘
+            hide_action = QAction("最小化到托盘", self)
+            hide_action.triggered.connect(self.hide)
+            tray_menu.addAction(hide_action)
 
             # 设置
             settings_action = QAction("设置", self)
@@ -627,7 +826,7 @@ class TimerWindow(QDialog):
 
             # 退出
             quit_action = QAction("退出", self)
-            quit_action.triggered.connect(QApplication.quit)
+            quit_action.triggered.connect(self._quit_application)
             tray_menu.addAction(quit_action)
 
             self.tray_icon.setContextMenu(tray_menu)
@@ -636,11 +835,49 @@ class TimerWindow(QDialog):
         else:
             self.tray_icon = None
 
+    def _show_and_activate(self):
+        """恢复并激活窗口"""
+        self.showNormal()
+        self.activateWindow()
+
     def _on_tray_activated(self, reason):
-        """托盘图标被点击时显示窗口"""
-        if reason == QSystemTrayIcon.ActivationReason.Trigger:
-            self.show()
-            self.activateWindow()
+        """托盘图标被点击时切换显示/隐藏窗口"""
+        if reason in (QSystemTrayIcon.ActivationReason.Trigger, QSystemTrayIcon.ActivationReason.DoubleClick):
+            if self.isVisible() and not self.isMinimized():
+                self.hide()
+            else:
+                self._show_and_activate()
+
+    def _minimize_window(self):
+        """顶部最小化按钮点击响应"""
+        if self.config.get("minimize_to_tray", False):
+            self._minimize_to_tray()
+        else:
+            self.showMinimized()
+
+    def _minimize_to_tray(self):
+        """最小化到系统托盘"""
+        self.hide()
+        if self.tray_icon and self.tray_icon.isVisible():
+            self.tray_icon.showMessage(
+                "番茄钟计时器",
+                "已最小化到系统托盘，点击托盘图标可恢复显示。",
+                QSystemTrayIcon.MessageIcon.Information,
+                1500
+            )
+
+    def _quit_application(self):
+        """从托盘彻底退出程序"""
+        self._force_quit = True
+        self.close()
+        QApplication.quit()
+
+    def changeEvent(self, event):
+        """监听窗口状态变化（例如标题栏最小化）"""
+        if event.type() == QEvent.Type.WindowStateChange:
+            if self.isMinimized() and self.config.get("minimize_to_tray", False):
+                QTimer.singleShot(0, self.hide)
+        super().changeEvent(event)
 
     def _update_tray_action_text(self):
         """更新托盘菜单中的开始/暂停文本"""
@@ -1085,6 +1322,19 @@ class TimerWindow(QDialog):
         """
         重写 closeEvent，在用户关闭窗口时执行最终清理和数据保存。
         """
+        # 如果开启了“关闭窗口时最小化到系统托盘”且不是强制退出，则隐藏到托盘
+        if not getattr(self, '_force_quit', False) and self.config.get("close_to_tray", False):
+            event.ignore()
+            self.hide()
+            if self.tray_icon and self.tray_icon.isVisible():
+                self.tray_icon.showMessage(
+                    "番茄钟计时器",
+                    "番茄钟已最小化到托盘并在后台运行。",
+                    QSystemTrayIcon.MessageIcon.Information,
+                    2000
+                )
+            return
+
         print("程序退出事件触发：正在执行最终数据保存...")
 
         # 1. 停止计时器
@@ -1130,13 +1380,19 @@ class TimerWindow(QDialog):
 
         if self.mode == TimerMode.CANCELLED:
             self.liquid_timer.set_time(0, 0)
-            self.more_menu.actions()[1].setText("重新开启番茄钟")
+            if hasattr(self, 'cancel_action'):
+                self.cancel_action.setText("重新开启番茄钟")
+            elif len(self.more_menu.actions()) > 1:
+                self.more_menu.actions()[1].setText("重新开启番茄钟")
         else:
             self.liquid_timer.set_time(
                 self._get_current_total_duration(),
                 self.mode_seconds_left
             )
-            self.more_menu.actions()[1].setText("自由记录")
+            if hasattr(self, 'cancel_action'):
+                self.cancel_action.setText("自由记录")
+            elif len(self.more_menu.actions()) > 1:
+                self.more_menu.actions()[1].setText("自由记录")
     def _get_current_total_duration(self):
         """获取当前模式的总时长"""
         if self.mode == TimerMode.FOCUS or self.mode == TimerMode.CANCELLED:

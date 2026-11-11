@@ -130,6 +130,8 @@ class Ui_Timer(object):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "番茄钟"))
         self.mode_label.setText(_translate("Dialog", "🎯 专注模式"))
+        self.settingsButton.setToolTip(_translate("Dialog", "设置"))
+        self.moreButton.setToolTip(_translate("Dialog", "更多操作"))
         self.timer_duration_laber.setText(_translate("Dialog", "今日专注: 00:00"))
         self.cycle_label.setText(_translate("Dialog", "剩余循环: 2"))
         self.startButton.setText(_translate("Dialog", "开始专注"))
