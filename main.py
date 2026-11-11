@@ -64,8 +64,8 @@ class TaskInputDialog(QDialog):
         self.setStyleSheet("""
             QDialog {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #f5fcf8, stop:1 #ffffff);
-                border: 1px solid rgba(78, 204, 163, 0.3);
+                    stop:0 #fdfbf9, stop:1 #ffffff);
+                border: 1px solid rgba(235, 94, 76, 0.3);
             }
         """)
         self._setup_ui(prompt)
@@ -79,7 +79,7 @@ class TaskInputDialog(QDialog):
         prompt_label = QLabel(prompt)
         prompt_label.setStyleSheet("""
             QLabel {
-                color: #1b4332;
+                color: #2b2523;
                 font-size: 15px;
                 font-weight: 700;
                 background: transparent;
@@ -98,17 +98,17 @@ class TaskInputDialog(QDialog):
                 border: 2px solid #d0d7de;
                 border-radius: 8px;
                 background-color: #ffffff;
-                color: #1a1a2e;
+                color: #2b2523;
                 font-size: 14px;
                 font-weight: 500;
-                selection-background-color: #4ecca3;
+                selection-background-color: #eb5e4c;
                 selection-color: #ffffff;
             }
             QLineEdit:hover {
                 border-color: #b0b7be;
             }
             QLineEdit:focus {
-                border-color: #4ecca3;
+                border-color: #eb5e4c;
                 background-color: #ffffff;
             }
         """)
@@ -150,7 +150,7 @@ class TaskInputDialog(QDialog):
             QPushButton {
                 padding: 8px 26px;
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #4ecca3, stop:1 #45b390);
+                    stop:0 #eb5e4c, stop:1 #d84532);
                 color: #ffffff;
                 border: none;
                 border-radius: 8px;
@@ -160,11 +160,11 @@ class TaskInputDialog(QDialog):
             }
             QPushButton:hover {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #5ddbb9, stop:1 #4ecca3);
+                    stop:0 #ff7361, stop:1 #eb5e4c);
             }
             QPushButton:pressed {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #3db38a, stop:1 #349571);
+                    stop:0 #c43827, stop:1 #af2f20);
             }
         """)
         ok_btn.clicked.connect(self._accept)

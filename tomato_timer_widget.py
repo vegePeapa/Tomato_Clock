@@ -159,13 +159,13 @@ class TomatoTimerWidget(QWidget):
         # 绘制放松表情
         self._draw_tomato_face(painter, tomato_center, base_radius * breath_scale, is_relax=True)
 
-        # 绘制进度环（绿色）
+        # 绘制进度环（休息模式为舒缓蜜糖暖橙）
         if self._total_seconds > 0:
             progress = self._remaining_seconds / self._total_seconds
         else:
             progress = 1.0
         self._draw_progress_ring(painter, center, base_radius * 1.3, progress,
-                                ring_color=QColor(102, 187, 106))
+                                ring_color=QColor(245, 158, 11))
 
         # 暂停时添加半透明遮罩与状态指示，运行时显示清晰倒计时数字
         if not self._is_running:
@@ -438,7 +438,7 @@ class TomatoTimerWidget(QWidget):
                            ring_color=None):
         """绘制进度环"""
         if ring_color is None:
-            ring_color = QColor(78, 204, 163)
+            ring_color = QColor(235, 94, 76)  # 暖意珊瑚番茄红进度环
 
         # 环的宽度
         ring_width = 10

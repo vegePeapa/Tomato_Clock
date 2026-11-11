@@ -1,30 +1,30 @@
-/* ===== 主窗口背景 ===== */
+/* ===== 主窗口背景（休息模式 - 舒缓温润蜜糖暖橙）===== */
 QDialog#TimerWindow {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-        stop:0 #e8f5e9, stop:0.5 #f1f8f3, stop:1 #f0fbf6);
+        stop:0 #fffaf6, stop:0.5 #fef4ec, stop:1 #fceede);
     font-family: 'Microsoft YaHei UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
-    color: #2e7d32;
+    color: #451a03;
 }
 
 /* ===== 模式标签 ===== */
 #mode_label {
-    color: #2e7d32;
+    color: #b45309;
     font-size: 15px;
     font-weight: 700;
     letter-spacing: 1px;
     padding: 12px 24px;
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 rgba(129, 199, 132, 0.2), stop:1 rgba(102, 187, 106, 0.2));
+        stop:0 rgba(245, 158, 11, 0.16), stop:1 rgba(217, 119, 6, 0.16));
     border-radius: 24px;
-    border: 2px solid rgba(102, 187, 106, 0.4);
+    border: 2px solid rgba(245, 158, 11, 0.38);
 }
 
 /* ===== 顶部按钮（设置/更多）===== */
 #settingsButton, #moreButton {
     background-color: rgba(255, 255, 255, 0.9);
-    border: 2px solid rgba(102, 187, 106, 0.35);
+    border: 2px solid rgba(245, 158, 11, 0.3);
     border-radius: 22px;
-    color: #2e7d32;
+    color: #451a03;
     font-size: 20px;
     font-weight: bold;
     padding: 8px;
@@ -32,11 +32,11 @@ QDialog#TimerWindow {
     min-height: 40px;
 }
 #settingsButton:hover, #moreButton:hover {
-    background-color: rgba(255, 255, 255, 1);
-    border-color: rgba(102, 187, 106, 0.6);
+    background-color: #ffffff;
+    border-color: rgba(245, 158, 11, 0.6);
 }
 #settingsButton:pressed, #moreButton:pressed {
-    background-color: rgba(255, 255, 255, 0.75);
+    background-color: rgba(255, 255, 255, 0.7);
 }
 
 /* 隐藏更多按钮默认自带的黑色下拉箭头 */
@@ -49,24 +49,23 @@ QDialog#TimerWindow {
 /* ===== 更多菜单样式 ===== */
 QMenu#more_menu {
     background-color: rgba(255, 255, 255, 0.98);
-    border: 2px solid rgba(102, 187, 106, 0.4);
+    border: 2px solid rgba(245, 158, 11, 0.35);
     border-radius: 12px;
     padding: 8px 0;
 }
 QMenu#more_menu::item {
     padding: 12px 32px;
-    color: #2e7d32;
+    color: #451a03;
     font-size: 14px;
     font-weight: 600;
 }
 QMenu#more_menu::item:selected {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 rgba(102, 187, 106, 0.2), stop:1 rgba(129, 199, 132, 0.2));
+    background: rgba(245, 158, 11, 0.15);
 }
 QMenu#more_menu::separator {
     height: 1px;
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 rgba(102, 187, 106, 0), stop:0.5 rgba(102, 187, 106, 0.3), stop:1 rgba(102, 187, 106, 0));
+        stop:0 rgba(245, 158, 11, 0), stop:0.5 rgba(245, 158, 11, 0.35), stop:1 rgba(245, 158, 11, 0));
     margin: 6px 12px;
 }
 
@@ -81,30 +80,30 @@ QMenu#more_menu::separator {
 
 /* ===== 今日专注时长标签 ===== */
 #timer_duration_laber {
-    color: #2e7d32;
+    color: #78350f;
     font-size: 15px;
     font-weight: 700;
     letter-spacing: 0.8px;
-    padding: 8px 16px;
-    background-color: rgba(255, 255, 255, 0.75);
+    padding: 8px 18px;
+    background-color: rgba(255, 255, 255, 0.9);
     border-radius: 16px;
-    border: 1px solid rgba(102, 187, 106, 0.35);
+    border: 1.5px solid rgba(245, 158, 11, 0.3);
 }
 
 /* ===== 循环次数标签 ===== */
 #cycle_label {
-    color: #2e7d32;
+    color: #78350f;
     font-size: 15px;
     font-weight: 700;
-    padding: 8px 16px;
-    background-color: rgba(255, 255, 255, 0.75);
+    padding: 8px 18px;
+    background-color: rgba(255, 255, 255, 0.9);
     border-radius: 16px;
-    border: 1px solid rgba(102, 187, 106, 0.35);
+    border: 1.5px solid rgba(245, 158, 11, 0.3);
 }
 
 /* ===== 次要信息标签 ===== */
 #secondaryInfoLabel {
-    color: #2e7d32;
+    color: #92400e;
     font-size: 13px;
     font-weight: 600;
 }
@@ -112,8 +111,8 @@ QMenu#more_menu::separator {
 /* ===== 开始/暂停按钮（主按钮）===== */
 #startButton {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #81c784, stop:1 #66bb6a);
-    border: 3px solid #a5d6a7;
+        stop:0 #f59e0b, stop:1 #d97706);
+    border: 3px solid #fbbf24;
     padding: 20px 40px;
     border-radius: 34px;
     color: #ffffff;
@@ -123,43 +122,43 @@ QMenu#more_menu::separator {
 }
 #startButton:hover {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #a5d6a7, stop:1 #81c784);
-    border-color: #c8e6c9;
+        stop:0 #fbbf24, stop:1 #f59e0b);
+    border-color: #fde68a;
 }
 #startButton:pressed {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #66bb6a, stop:1 #4caf50);
-    border-color: #66bb6a;
+        stop:0 #b45309, stop:1 #92400e);
+    border-color: #b45309;
 }
 
 /* ===== 结束任务按钮（次主按钮）===== */
 #finishButton {
     background-color: rgba(255, 255, 255, 0.95);
-    border: 2.5px solid rgba(102, 187, 106, 0.5);
+    border: 2.5px solid rgba(245, 158, 11, 0.4);
     padding: 20px 32px;
     border-radius: 34px;
-    color: #2e7d32;
+    color: #78350f;
     font-size: 16px;
     font-weight: 700;
     letter-spacing: 0.8px;
 }
 #finishButton:hover {
     background-color: rgba(255, 255, 255, 1);
-    border-color: rgba(102, 187, 106, 0.75);
+    border-color: rgba(245, 158, 11, 0.7);
 }
 #finishButton:pressed {
     background-color: rgba(255, 255, 255, 0.8);
-    border-color: rgba(102, 187, 106, 0.35);
+    border-color: rgba(245, 158, 11, 0.3);
 }
 
 /* ===== 弹窗与消息提示框 (QMessageBox) ===== */
 QMessageBox {
     background-color: #ffffff;
-    border: 2px solid #66bb6a;
+    border: 2px solid #f59e0b;
     border-radius: 14px;
 }
 QMessageBox QLabel {
-    color: #2e7d32;
+    color: #451a03;
     font-size: 14px;
     font-weight: 600;
     font-family: 'Microsoft YaHei UI', 'Segoe UI', sans-serif;
@@ -169,7 +168,7 @@ QMessageBox QLabel {
 }
 QMessageBox QPushButton {
     padding: 8px 24px;
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #81c784, stop:1 #66bb6a);
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f59e0b, stop:1 #d97706);
     color: #ffffff;
     border: none;
     border-radius: 8px;
@@ -179,10 +178,10 @@ QMessageBox QPushButton {
     min-height: 24px;
 }
 QMessageBox QPushButton:hover {
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #a5d6a7, stop:1 #81c784);
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #fbbf24, stop:1 #f59e0b);
 }
 QMessageBox QPushButton:pressed {
-    background: #4caf50;
+    background: #b45309;
 }
 QMessageBox QPushButton[text="No"], 
 QMessageBox QPushButton[text="否"], 
@@ -202,9 +201,9 @@ QMessageBox QPushButton[text="Cancel"]:hover {
 
 /* ===== 通用工具提示 (QToolTip) ===== */
 QToolTip {
-    background-color: #2e7d32;
+    background-color: #451a03;
     color: #ffffff;
-    border: 1.5px solid #81c784;
+    border: 1.5px solid #f59e0b;
     border-radius: 6px;
     padding: 6px 10px;
     font-size: 12px;
