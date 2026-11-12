@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none">
+  <path d="M4 22V3" stroke="#4a4443" stroke-width="2" stroke-linecap="round"/>
+  <!-- Checkered flag body -->
+  <path d="M4 4c4-2 8 2 12 0v9c-4 2-8-2-12 0V4z" stroke="#4a4443" stroke-width="1.8" stroke-linejoin="round"/>
+  <rect x="4" y="4" width="4" height="4.5" fill="#4a4443"/>
+  <rect x="12" y="4" width="4" height="4.5" fill="#4a4443"/>
+  <rect x="8" y="8.5" width="4" height="4.5" fill="#4a4443"/>
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <!-- 主枝 -->
+  <path d="M10 110 Q 30 70, 70 30" stroke="#b0c8b0" stroke-width="3" stroke-linecap="round"/>
+  <!-- 叶片1 (底部右) -->
+  <path d="M28 85 C 45 80, 55 95, 45 105 C 35 110, 25 95, 28 85 Z" fill="#c3d9c3" opacity="0.85"/>
+  <!-- 叶片2 (中部左) -->
+  <path d="M38 65 C 20 55, 15 40, 30 35 C 45 35, 45 55, 38 65 Z" fill="#d2e3d2" opacity="0.9"/>
+  <!-- 叶片3 (中部右) -->
+  <path d="M52 50 C 70 42, 85 52, 75 68 C 65 75, 50 60, 52 50 Z" fill="#b9d2b9" opacity="0.85"/>
+  <!-- 叶片4 (顶端) -->
+  <path d="M68 32 C 75 15, 90 18, 90 30 C 85 45, 70 42, 68 32 Z" fill="#c8ddc8" opacity="0.9"/>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none">
+  <!-- Steam lines -->
+  <path d="M6 3c0 1.5 1.5 1.5 1.5 3s-1.5 1.5-1.5 3" stroke="#6b6361" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M10 2c0 1.5 1.5 1.5 1.5 3s-1.5 1.5-1.5 3" stroke="#6b6361" stroke-width="1.8" stroke-linecap="round"/>
+  <!-- Cup body -->
+  <path d="M3 9h12v6a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V9z" fill="#6b6361"/>
+  <!-- Handle -->
+  <path d="M15 11h2.5a2.5 2.5 0 0 1 0 5H15" stroke="#6b6361" stroke-width="2" stroke-linecap="round"/>
+  <!-- Base saucer line -->
+  <line x1="2" y1="21" x2="16" y2="21" stroke="#6b6361" stroke-width="2" stroke-linecap="round"/>
+</svg>

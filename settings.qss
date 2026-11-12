@@ -1,71 +1,72 @@
-/* ===== 对话框整体背景 ===== */
+/* ===== 设置界面极简现代卡片样式 (匹配参考图温暖精致风格) ===== */
+
+/* 对话框整体背景 */
 QDialog#SettingsDialog {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-        stop:0 #fdfbf9, stop:0.5 #fbf7f4, stop:1 #ffffff);
+    background-color: #faf6f5;
+    font-family: 'Microsoft YaHei UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+    color: #2b2523;
 }
 
-/* ===== 选项卡面板 ===== */
+/* ===== 分段胶囊选项卡 (Capsule Tabs) ===== */
 QTabWidget::pane {
-    border: 2px solid rgba(235, 94, 76, 0.28);
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.98);
-    top: -2px;
+    border: none;
+    background: transparent;
+    padding-top: 10px;
 }
 QTabWidget > QWidget {
-    background: rgba(255, 255, 255, 0.98);
-    border-radius: 12px;
+    background: transparent;
+}
+QTabBar {
+    background: transparent;
+    qproperty-drawBase: 0;
 }
 QTabBar::tab {
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #fbf8f5, stop:1 #f3eee9);
-    border: 1.5px solid rgba(235, 94, 76, 0.25);
-    border-bottom: none;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    padding: 8px 18px;
-    margin-right: 4px;
-    color: #786c67;
-    font-weight: 600;
+    background: #f2ece8;
+    border: 1px solid #e8dfd8;
+    border-radius: 17px;
+    padding: 7px 18px;
+    margin-right: 8px;
+    color: #756a65;
     font-size: 13px;
+    font-weight: 600;
 }
 QTabBar::tab:selected {
-    background: rgba(255, 255, 255, 0.98);
-    border-color: rgba(235, 94, 76, 0.45);
-    border-bottom: 2px solid #ffffff;
-    color: #9e2a1b;
+    background: #ffffff;
+    border: 1.5px solid #ff7562;
+    color: #ff5b48;
     font-weight: 700;
 }
-QTabBar::tab:hover {
-    background: #ffffff;
-    border-color: rgba(235, 94, 76, 0.5);
-    color: #eb5e4c;
+QTabBar::tab:hover:!selected {
+    background: #faf6f4;
+    border-color: #e0d5ce;
+    color: #2b2523;
 }
 
-/* ===== 设置分组卡片 ===== */
+/* ===== 设置分组卡片 (纯白卡片 + 极细柔和边框) ===== */
 QWidget#settingsCard {
     background-color: #ffffff;
-    border: 1.5px solid rgba(235, 94, 76, 0.3);
-    border-radius: 10px;
+    border: 1px solid #f0ece9;
+    border-radius: 16px;
 }
 
-/* ===== 分组与行标签样式 ===== */
+/* 分组标题与文字 */
 QLabel#sectionHeader {
     font-size: 13px;
     font-weight: 700;
-    color: #9e2a1b;
-    padding: 2px 2px;
+    color: #ff5b48;
+    padding: 4px 2px;
 }
 QLabel#rowTitle {
     font-size: 14px;
     font-weight: 600;
     color: #2b2523;
+    background: transparent;
 }
 QLabel#rowDesc {
     font-size: 12px;
-    color: #786c67;
+    color: #8c827e;
+    background: transparent;
 }
-
-/* ===== 标签 ===== */
 QLabel {
     color: #2b2523;
     font-size: 14px;
@@ -73,206 +74,163 @@ QLabel {
     background: transparent;
 }
 
-/* ===== 数字输入框 ===== */
+/* ===== 数字微调输入框 (QSpinBox) ===== */
 QSpinBox {
     padding: 6px 30px 6px 12px;
-    border: 2px solid rgba(235, 94, 76, 0.35);
-    border-radius: 8px;
-    background: #ffffff;
+    border: 1px solid #e5dfda;
+    border-radius: 10px;
+    background-color: #faf8f7;
     color: #2b2523;
     font-size: 14px;
     font-weight: 600;
     min-height: 32px;
-    max-width: 140px;
-}
-QSpinBox:focus {
-    border: 2px solid #eb5e4c;
-    background: #ffffff;
+    max-width: 130px;
 }
 QSpinBox:hover {
-    border: 2px solid rgba(235, 94, 76, 0.55);
+    border-color: #ffb8b0;
+    background-color: #ffffff;
+}
+QSpinBox:focus {
+    border: 1.5px solid #ff5b48;
+    background-color: #ffffff;
 }
 QSpinBox::up-button {
     subcontrol-origin: border;
     subcontrol-position: top right;
     width: 24px;
-    height: 18px;
-    border-left: 1px solid rgba(235, 94, 76, 0.3);
-    border-bottom: 0.5px solid rgba(235, 94, 76, 0.3);
-    border-top-right-radius: 7px;
-    background: rgba(235, 94, 76, 0.1);
+    height: 16px;
+    border: none;
+    background: transparent;
+    border-top-right-radius: 9px;
 }
 QSpinBox::up-button:hover {
-    background: rgba(235, 94, 76, 0.25);
+    background: #eee8e4;
 }
 QSpinBox::up-arrow {
-    image: url({ASSET_DIR}/arrow_up.png);
-    width: 10px;
-    height: 10px;
+    image: url({ASSET_DIR}/assets/arrow_up.svg);
+    width: 12px;
+    height: 12px;
 }
 QSpinBox::down-button {
     subcontrol-origin: border;
     subcontrol-position: bottom right;
     width: 24px;
-    height: 18px;
-    border-left: 1px solid rgba(235, 94, 76, 0.3);
-    border-top: 0.5px solid rgba(235, 94, 76, 0.3);
-    border-bottom-right-radius: 7px;
-    background: rgba(235, 94, 76, 0.1);
+    height: 16px;
+    border: none;
+    background: transparent;
+    border-bottom-right-radius: 9px;
 }
 QSpinBox::down-button:hover {
-    background: rgba(235, 94, 76, 0.25);
+    background: #eee8e4;
 }
 QSpinBox::down-arrow {
-    image: url({ASSET_DIR}/arrow_down.png);
-    width: 10px;
-    height: 10px;
+    image: url({ASSET_DIR}/assets/arrow_down.svg);
+    width: 12px;
+    height: 12px;
 }
 
-/* ===== 滑块 ===== */
+/* ===== 声音滑块 (QSlider) ===== */
 QSlider::groove:horizontal {
-    height: 8px;
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 rgba(235, 94, 76, 0.18), stop:1 rgba(216, 69, 50, 0.18));
-    border-radius: 4px;
+    height: 6px;
+    background: #eee8e4;
+    border-radius: 3px;
+}
+QSlider::sub-page:horizontal {
+    height: 6px;
+    background: #ff6552;
+    border-radius: 3px;
 }
 QSlider::handle:horizontal {
-    width: 20px;
-    height: 20px;
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-        stop:0 #eb5e4c, stop:1 #d84532);
-    border: 2px solid #ff7b6b;
-    border-radius: 10px;
+    width: 18px;
+    height: 18px;
+    background: #ff5b48;
+    border: 2px solid #ffffff;
+    border-radius: 9px;
     margin: -6px 0;
 }
 QSlider::handle:horizontal:hover {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-        stop:0 #ff7361, stop:1 #eb5e4c);
+    background: #ff7867;
 }
 
-/* ===== 复选框 ===== */
+/* ===== 复选框 (QCheckBox) ===== */
 QCheckBox {
     font-size: 14px;
     color: #2b2523;
     font-weight: 600;
-    spacing: 10px;
+    spacing: 12px;
 }
 QCheckBox::indicator {
     width: 20px;
     height: 20px;
-    border: 2px solid rgba(235, 94, 76, 0.45);
-    border-radius: 6px;
-    background: #ffffff;
+    image: url({ASSET_DIR}/assets/checkbox_unchecked.svg);
+    background: transparent;
+    border: none;
 }
 QCheckBox::indicator:hover {
-    border-color: #eb5e4c;
+    image: url({ASSET_DIR}/assets/checkbox_hover.svg);
 }
 QCheckBox::indicator:checked {
-    image: url({ASSET_DIR}/checkbox_checked.png);
-    border-color: #eb5e4c;
+    image: url({ASSET_DIR}/assets/checkbox_checked.svg);
 }
 
-/* ===== 底部按钮 ===== */
-QPushButton {
-    padding: 8px 24px;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 14px;
-    min-height: 22px;
-}
+/* ===== 试听按钮 ===== */
 #previewSoundButton {
-    padding: 2px 10px;
-    min-width: 50px;
-    max-width: 70px;
-    min-height: 24px;
-    background-color: rgba(235, 94, 76, 0.12);
-    color: #9e2a1b;
-    border: 1.5px solid rgba(235, 94, 76, 0.35);
-    border-radius: 6px;
+    padding: 4px 14px;
+    min-width: 60px;
+    min-height: 28px;
+    background-color: #fdebed;
+    color: #ff5b48;
+    border: 1px solid #fcdada;
+    border-radius: 10px;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
 }
 #previewSoundButton:hover {
-    background-color: rgba(235, 94, 76, 0.25);
-    border-color: #eb5e4c;
+    background-color: #fce2e5;
+    border-color: #f8c2c7;
 }
 #previewSoundButton:pressed {
-    background-color: rgba(235, 94, 76, 0.4);
+    background-color: #fad5d9;
 }
 #previewSoundButton:disabled {
-    background-color: #f0f0f0;
-    color: #a0a0a0;
-    border-color: #dcdcdc;
+    background-color: #f2f2f2;
+    color: #b5b5b5;
+    border-color: #e5e5e5;
 }
 
-#saveButton {
+/* ===== 底部保存/取消按钮 ===== */
+QPushButton#saveButton {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #eb5e4c, stop:1 #d84532);
-    color: white;
+        stop:0 #ff6552, stop:1 #ee4a39);
+    color: #ffffff;
     border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    min-height: 36px;
 }
-#saveButton:hover {
+QPushButton#saveButton:hover {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #ff7361, stop:1 #eb5e4c);
+        stop:0 #ff7867, stop:1 #f05747);
 }
-#saveButton:pressed {
+QPushButton#saveButton:pressed {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #c43827, stop:1 #af2f20);
-}
-#cancelButton {
-    background-color: #f6f8fa;
-    color: #24292f;
-    border: 1.5px solid #d0d7de;
-}
-#cancelButton:hover {
-    background-color: #e8eaed;
-    border-color: #afb8c1;
-}
-#cancelButton:pressed {
-    background-color: #d0d7de;
+        stop:0 #d93d2c, stop:1 #c23323);
 }
 
-/* ===== 弹窗与消息提示框 (QMessageBox) ===== */
-QMessageBox {
+QPushButton#cancelButton {
     background-color: #ffffff;
-    border: 2px solid #eb5e4c;
-    border-radius: 14px;
-}
-QMessageBox QLabel {
-    color: #2b2523;
+    border: 1.5px solid #eae6e6;
+    border-radius: 12px;
+    color: #444444;
     font-size: 14px;
     font-weight: 600;
-    font-family: 'Microsoft YaHei UI', 'Segoe UI', sans-serif;
-    background: transparent;
-    min-height: 40px;
-    padding: 6px;
+    min-height: 36px;
 }
-QMessageBox QPushButton {
-    padding: 8px 24px;
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #eb5e4c, stop:1 #d84532);
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 700;
-    min-width: 75px;
-    min-height: 24px;
+QPushButton#cancelButton:hover {
+    background-color: #fdfdfd;
+    border-color: #dad5d5;
 }
-QMessageBox QPushButton:hover {
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ff7361, stop:1 #eb5e4c);
-}
-QMessageBox QPushButton:pressed {
-    background: #c43827;
-}
-
-/* ===== 通用工具提示 (QToolTip) ===== */
-QToolTip {
-    background-color: #2b2523;
-    color: #ffffff;
-    border: 1.5px solid #eb5e4c;
-    border-radius: 6px;
-    padding: 6px 10px;
-    font-size: 12px;
-    font-family: 'Microsoft YaHei UI', 'Segoe UI', sans-serif;
-    font-weight: 500;
+QPushButton#cancelButton:pressed {
+    background-color: #f2f2f2;
 }

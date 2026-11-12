@@ -1,469 +1,286 @@
 """
-可爱番茄时间显示组件 - Cute Tomato Timer Widget
-创建一个Q版可爱的番茄倒计时动画
+可爱圆润番茄时钟组件 - Chibi Tomato Timer Widget
+基于用户参考设计重构：
+- 顶部活力射线与珊瑚红动态圆弧环
+- 优雅纯白浮雕圆卡与柔和多层弥散阴影
+- 上部可爱 3D 水灵小番茄（呼吸浮动、高光与绿叶）
+- 中部清晰现代化大号数字倒计时
+- 下部精致珊瑚红暂停胶囊指示
 """
-from PyQt6.QtWidgets import QWidget, QVBoxLayout
-from PyQt6.QtCore import Qt, QTimer, QPointF, QRectF
-from PyQt6.QtGui import QPainter, QPainterPath, QColor, QFont, QRadialGradient, QPen, QLinearGradient
 import math
+from PyQt6.QtWidgets import QWidget
+from PyQt6.QtCore import Qt, QTimer, QPointF, QRectF, pyqtSignal
+from PyQt6.QtGui import (
+    QPainter, QPainterPath, QColor, QFont, QRadialGradient,
+    QPen, QBrush
+)
 
 
 class TomatoTimerWidget(QWidget):
-    """
-    可爱番茄时间显示组件
-    核心特性：
-    - Q版圆润番茄造型
-    - 表情随时间变化（手绘风格）
-    - 呼吸和摇晃动画
-    - 时间进度环形显示
-    """
+    """可爱圆润番茄时钟显示组件"""
+    clicked = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setMinimumSize(320, 320)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
 
-        # 状态变量
-        self._total_seconds = 25 * 60  # 总时间（秒）
-        self._remaining_seconds = 25 * 60  # 剩余时间（秒）
+        self._total_seconds = 25 * 60
+        self._remaining_seconds = 25 * 60
         self._is_running = False
-        self._mode = "focus"  # focus, relax, cancelled
+        self._mode = "focus"
+        self._breath = 0.0
+        self._breath_dir = 1
 
-        # 动画变量
-        self._breath_value = 0.0  # 呼吸值（0-1）
-        self._breath_direction = 1  # 呼吸方向
-        self._sway_angle = 0.0  # 摇晃角度
-        self._leaf_wave = 0.0  # 叶子摆动
+        # 呼吸与微动动画计时器 (~30 FPS)
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self._tick)
+        self.timer.start(30)
 
-        # 设置最小尺寸
-        self.setMinimumSize(300, 300)
-
-        # 启动动画计时器（60 FPS）
-        self._animation_timer = QTimer()
-        self._animation_timer.timeout.connect(self._update_animation)
-        self._animation_timer.start(16)  # ~60 FPS
-
-        # 启动呼吸计时器
-        self._breath_timer = QTimer()
-        self._breath_timer.timeout.connect(self._update_breath)
-        self._breath_timer.start(30)  # 呼吸速度
-
-    def set_time(self, total_seconds, remaining_seconds):
-        """设置时间"""
-        self._total_seconds = total_seconds
-        self._remaining_seconds = remaining_seconds
+    def set_time(self, total_seconds: int, remaining_seconds: int):
+        """设置总时间与当前剩余时间"""
+        self._total_seconds = max(1, total_seconds)
+        self._remaining_seconds = max(0, remaining_seconds)
         self.update()
 
-    def set_mode(self, mode):
-        """设置模式"""
+    def set_mode(self, mode: str):
+        """设置当前模式 ('focus', 'relax', 'cancelled', 'completed')"""
         self._mode = mode
         self.update()
 
-    def set_running(self, is_running):
+    def set_running(self, is_running: bool):
         """设置运行状态"""
         self._is_running = is_running
+        self.update()
 
-    def _update_animation(self):
-        """更新摇晃和叶子动画"""
+    def mousePressEvent(self, event):
+        """点击时钟中心区域触发 clicked 信号（可切换开始/暂停）"""
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.clicked.emit()
+        super().mousePressEvent(event)
+
+    def _tick(self):
+        """呼吸动画微动"""
         if self._is_running:
-            # 运行时摇晃更快
-            self._sway_angle += 0.03
-            self._leaf_wave += 0.05
-        else:
-            # 暂停时摇晃缓慢
-            self._sway_angle += 0.008
-            self._leaf_wave += 0.02
-        self.update()
-
-    def _update_breath(self):
-        """更新呼吸效果"""
-        step = 0.008
-        self._breath_value += step * self._breath_direction
-
-        if self._breath_value >= 1.0:
-            self._breath_value = 1.0
-            self._breath_direction = -1
-        elif self._breath_value <= 0.0:
-            self._breath_value = 0.0
-            self._breath_direction = 1
-
-        self.update()
+            self._breath += 0.02 * self._breath_dir
+            if self._breath >= 1.0:
+                self._breath = 1.0
+                self._breath_dir = -1
+            elif self._breath <= 0.0:
+                self._breath = 0.0
+                self._breath_dir = 1
+            self.update()
 
     def paintEvent(self, event):
-        """绘制组件"""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        # 获取尺寸
-        width = self.width()
-        height = self.height()
-        center = QPointF(width / 2, height / 2)
+        w = self.width()
+        h = self.height()
+        center = QPointF(w / 2, h / 2)
+        radius = min(w, h) * 0.42
 
-        # 根据模式绘制
-        if self._mode == "focus":
-            self._draw_focus_mode(painter, center)
-        elif self._mode == "relax":
-            self._draw_relax_mode(painter, center)
-        else:  # cancelled
-            self._draw_cancelled_mode(painter, center)
+        # 1. 右上角活力射线
+        self._draw_sun_rays(painter, center, radius)
 
-    def _draw_focus_mode(self, painter, center):
-        """绘制专注模式 - 红色番茄"""
-        # 计算基础半径（呼吸效果）
-        base_radius = min(self.width(), self.height()) * 0.28
-        breath_scale = 1.0 + self._breath_value * 0.05
+        # 2. 外部进度环与起始圆钮
+        progress = self._remaining_seconds / max(1, self._total_seconds)
+        self._draw_progress_ring(painter, center, radius, progress)
 
-        # 计算摇晃偏移（暂停时不摇晃）
-        if not self._is_running:
-            sway_offset = 0
-        else:
-            sway_offset = math.sin(self._sway_angle) * 3
+        # 3. 中央纯白圆形卡片（含多层柔和漫反射环境阴影）
+        inner_r = radius * 0.90
+        self._draw_white_card(painter, center, inner_r)
 
-        # 绘制番茄身体
-        tomato_center = QPointF(center.x() + sway_offset, center.y())
-        self._draw_tomato_body(painter, tomato_center, base_radius * breath_scale,
-                              is_running=self._is_running)
+        # 4. 上半部 Q 版 3D 萌系小番茄
+        breath_offset = self._breath * 2.5 if self._is_running else 0
+        tomato_y = center.y() - inner_r * 0.43 + breath_offset
+        tomato_center = QPointF(center.x(), tomato_y)
+        self._draw_chibi_tomato(painter, tomato_center, inner_r * 0.40)
 
-        # 绘制叶子
-        self._draw_tomato_leaves(painter, tomato_center, base_radius * breath_scale)
+        # 5. 中间大号清晰数字倒计时 (例如 25:00)
+        time_y = center.y() + inner_r * 0.10
+        self._draw_digital_clock(painter, center.x(), time_y, inner_r)
 
-        # 绘制表情
-        self._draw_tomato_face(painter, tomato_center, base_radius * breath_scale)
+        # 6. 下部状态药丸（暂停/播放指示胶囊）
+        pill_y = center.y() + inner_r * 0.54
+        self._draw_status_pill(painter, center.x(), pill_y, inner_r)
 
-        # 绘制进度环
-        if self._total_seconds > 0:
-            progress = self._remaining_seconds / self._total_seconds
-        else:
-            progress = 1.0
-        self._draw_progress_ring(painter, center, base_radius * 1.3, progress)
-
-        # 暂停时添加半透明遮罩与状态指示，运行时显示清晰倒计时数字
-        if not self._is_running:
-            self._draw_pause_overlay(painter, center, base_radius)
-        else:
-            self._draw_time_display(painter, tomato_center, base_radius * breath_scale)
-
-    def _draw_relax_mode(self, painter, center):
-        """绘制休息模式 - 橙色番茄"""
-        base_radius = min(self.width(), self.height()) * 0.28
-        breath_scale = 1.0 + self._breath_value * 0.03
-        sway_offset = math.sin(self._sway_angle) * 2
-
-        tomato_center = QPointF(center.x() + sway_offset, center.y())
-
-        # 绘制橙色番茄
-        self._draw_tomato_body(painter, tomato_center, base_radius * breath_scale,
-                              is_running=self._is_running, is_relax=True)
-
-        # 绘制叶子
-        self._draw_tomato_leaves(painter, tomato_center, base_radius * breath_scale)
-
-        # 绘制放松表情
-        self._draw_tomato_face(painter, tomato_center, base_radius * breath_scale, is_relax=True)
-
-        # 绘制进度环（休息模式为舒缓蜜糖暖橙）
-        if self._total_seconds > 0:
-            progress = self._remaining_seconds / self._total_seconds
-        else:
-            progress = 1.0
-        self._draw_progress_ring(painter, center, base_radius * 1.3, progress,
-                                ring_color=QColor(245, 158, 11))
-
-        # 暂停时添加半透明遮罩与状态指示，运行时显示清晰倒计时数字
-        if not self._is_running:
-            self._draw_pause_overlay(painter, center, base_radius)
-        else:
-            self._draw_time_display(painter, tomato_center, base_radius * breath_scale)
-
-    def _draw_cancelled_mode(self, painter, center):
-        """绘制取消模式 - 灰色番茄"""
-        base_radius = min(self.width(), self.height()) * 0.25
-
-        # 暂停时不摇晃
-        if not self._is_running:
-            sway_offset = 0
-        else:
-            sway_offset = math.sin(self._sway_angle) * 1.5
-
-        tomato_center = QPointF(center.x() + sway_offset, center.y())
-
-        # 绘制灰色番茄（暂停时更暗）
-        self._draw_tomato_body(painter, tomato_center, base_radius,
-                              is_running=self._is_running, is_cancelled=True)
-
-        # 绘制叶子（暂停时更下垂）
-        if not self._is_running:
-            self._draw_tomato_leaves(painter, tomato_center, base_radius, is_droopy=True, is_paused=True)
-        else:
-            self._draw_tomato_leaves(painter, tomato_center, base_radius, is_droopy=True)
-
-        # 绘制表情（运行时无聊，暂停时深度睡眠）
-        self._draw_tomato_face(painter, tomato_center, base_radius, is_cancelled=True)
-
-        # 虚线环
-        pen = QPen(QColor(150, 150, 150, 100), 2, Qt.PenStyle.DashLine)
+    def _draw_sun_rays(self, painter, center, radius):
+        """绘制右上角两条跳跃的活力光芒"""
+        painter.save()
+        ray_color = QColor(255, 120, 105, 210) if self._mode != "relax" else QColor(245, 158, 11, 210)
+        pen = QPen(ray_color, 4.5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
         painter.setPen(pen)
-        painter.setBrush(Qt.BrushStyle.NoBrush)
-        painter.drawEllipse(center, base_radius * 1.3, base_radius * 1.3)
 
-        # 暂停时添加半透明遮罩与状态指示，运行时显示清晰倒计时数字
-        if not self._is_running:
-            self._draw_pause_overlay(painter, center, base_radius)
-        else:
-            self._draw_time_display(painter, tomato_center, base_radius)
+        # 射线 1
+        r1 = radius * 1.09
+        len1 = 13
+        a1 = math.radians(-54)
+        p1 = QPointF(center.x() + r1 * math.cos(a1), center.y() + r1 * math.sin(a1))
+        p2 = QPointF(center.x() + (r1 + len1) * math.cos(a1), center.y() + (r1 + len1) * math.sin(a1))
+        painter.drawLine(p1, p2)
 
-    def _draw_tomato_body(self, painter, center, radius, is_running=True,
-                         is_relax=False, is_cancelled=False):
-        """绘制精致自然的番茄身体（具有 3D 球体质感、环境反光和柔和阴影）"""
-        # 1. 绘制底部软阴影，使番茄具有悬浮立体感
-        shadow_path = QPainterPath()
-        shadow_rect = QRectF(center.x() - radius * 0.95, center.y() + radius * 0.75,
-                             radius * 1.9, radius * 0.25)
-        shadow_path.addEllipse(shadow_rect)
-        shadow_gradient = QRadialGradient(
-            QPointF(center.x(), center.y() + radius * 0.87), radius * 0.9
-        )
-        shadow_gradient.setColorAt(0, QColor(0, 0, 0, 50))
-        shadow_gradient.setColorAt(0.6, QColor(0, 0, 0, 18))
-        shadow_gradient.setColorAt(1, QColor(0, 0, 0, 0))
-        painter.fillPath(shadow_path, shadow_gradient)
+        # 射线 2
+        r2 = radius * 1.08
+        len2 = 17
+        a2 = math.radians(-32)
+        p3 = QPointF(center.x() + r2 * math.cos(a2), center.y() + r2 * math.sin(a2))
+        p4 = QPointF(center.x() + (r2 + len2) * math.cos(a2), center.y() + (r2 + len2) * math.sin(a2))
+        painter.drawLine(p3, p4)
+        painter.restore()
 
-        # 2. 绘制番茄主轮廓（稍扁平的饱满椭圆）
-        path = QPainterPath()
-        rect = QRectF(center.x() - radius, center.y() - radius * 0.9,
-                     radius * 2, radius * 1.8)
-        path.addEllipse(rect)
+    def _draw_progress_ring(self, painter, center, radius, progress):
+        """绘制环形进度条和 12 点钟同心圆起点按钮"""
+        painter.save()
+        ring_w = 9.0
 
-        # 设置 3D 渐变色光源（位于左上方）
-        grad_center = QPointF(center.x() - radius * 0.25, center.y() - radius * 0.25)
-        
-        if is_cancelled:
-            # 灰色模式 3D 渐变
-            gradient = QRadialGradient(grad_center, radius * 1.25)
-            gradient.setColorAt(0, QColor(235, 235, 235))
-            gradient.setColorAt(0.5, QColor(170, 170, 170))
-            gradient.setColorAt(0.85, QColor(125, 125, 125))
-            gradient.setColorAt(1, QColor(95, 95, 95))
-        elif is_relax:
-            # 橙色模式 3D 渐变（亮橙到红橙）
-            gradient = QRadialGradient(grad_center, radius * 1.25)
-            gradient.setColorAt(0, QColor(255, 220, 160))
-            gradient.setColorAt(0.4, QColor(255, 150, 80))
-            gradient.setColorAt(0.85, QColor(225, 95, 40))
-            gradient.setColorAt(1, QColor(175, 65, 25))
-        else:
-            # 正常红色模式 3D 渐变（粉红到深红，根据运行状态调整亮度）
-            bright = 0 if is_running else -15
-            gradient = QRadialGradient(grad_center, radius * 1.25)
-            gradient.setColorAt(0, QColor(255 + bright, 115 + bright, 105 + bright))
-            gradient.setColorAt(0.4, QColor(235 + bright, 65 + bright, 55 + bright))
-            gradient.setColorAt(0.85, QColor(190 + bright, 30 + bright, 25 + bright))
-            gradient.setColorAt(1, QColor(145 + bright, 15 + bright, 15 + bright))
-
-        painter.fillPath(path, gradient)
-
-        # 3. 绘制右下侧的反光（Reflex Light），增加物体环境融合感
-        reflex_path = QPainterPath()
-        reflex_path.addEllipse(rect)
-        reflex_gradient = QRadialGradient(
-            QPointF(center.x() + radius * 0.6, center.y() + radius * 0.5), radius * 0.7
-        )
-        if is_cancelled:
-            reflex_gradient.setColorAt(0, QColor(255, 255, 255, 35))
-            reflex_gradient.setColorAt(1, QColor(255, 255, 255, 0))
-        elif is_relax:
-            reflex_gradient.setColorAt(0, QColor(255, 255, 180, 55))
-            reflex_gradient.setColorAt(1, QColor(255, 255, 180, 0))
-        else:
-            reflex_gradient.setColorAt(0, QColor(255, 180, 180, 60))
-            reflex_gradient.setColorAt(1, QColor(255, 180, 180, 0))
-        painter.fillPath(reflex_path, reflex_gradient)
-
-        # 4. 绘制主要柔和高光
-        highlight1_path = QPainterPath()
-        h1_rect = QRectF(center.x() - radius * 0.45, center.y() - radius * 0.65,
-                         radius * 0.6, radius * 0.4)
-        highlight1_path.addEllipse(h1_rect)
-        h1_grad = QRadialGradient(
-            QPointF(center.x() - radius * 0.25, center.y() - radius * 0.5), radius * 0.35
-        )
-        h1_grad.setColorAt(0, QColor(255, 255, 255, 140))
-        h1_grad.setColorAt(1, QColor(255, 255, 255, 0))
-        painter.fillPath(highlight1_path, h1_grad)
-
-        # 5. 绘制次要晶莹亮斑，呈现质感光泽
-        highlight2_path = QPainterPath()
-        h2_rect = QRectF(center.x() - radius * 0.3, center.y() - radius * 0.55,
-                         radius * 0.15, radius * 0.1)
-        highlight2_path.addEllipse(h2_rect)
-        painter.fillPath(highlight2_path, QColor(255, 255, 255, 190))
-
-    def _draw_tomato_leaves(self, painter, center, radius, is_droopy=False, is_paused=False):
-        """绘制精致自然的番茄顶部叶子与果蒂"""
-        # 叶片底色与尖端颜色
-        base_green = QColor(46, 125, 50) if (not self._is_running or is_paused) else QColor(56, 142, 60)
-        tip_green = QColor(102, 187, 106) if (not self._is_running or is_paused) else QColor(129, 199, 132)
-        
-        # 1. 绘制果蒂（中心小木质茎，向上并略微向左弯曲）
-        stem_path = QPainterPath()
-        stem_base_y = center.y() - radius * 0.85
-        stem_top_x = center.x() - radius * 0.12
-        stem_top_y = center.y() - radius * 1.05
-        
-        stem_path.moveTo(center.x() - radius * 0.05, stem_base_y)
-        stem_path.quadTo(QPointF(center.x() - radius * 0.04, stem_base_y - radius * 0.12),
-                         QPointF(stem_top_x, stem_top_y))
-        stem_path.lineTo(stem_top_x + radius * 0.08, stem_top_y - radius * 0.02)
-        stem_path.quadTo(QPointF(center.x() + radius * 0.05, stem_base_y - radius * 0.1),
-                         QPointF(center.x() + radius * 0.05, stem_base_y))
-        stem_path.closeSubpath()
-        
-        stem_grad = QLinearGradient(QPointF(center.x(), stem_base_y), QPointF(stem_top_x, stem_top_y))
-        stem_grad.setColorAt(0, QColor(78, 52, 46) if is_paused else QColor(93, 64, 55)) # 木质褐绿
-        stem_grad.setColorAt(1, base_green.darker(110))
-        painter.fillPath(stem_path, stem_grad)
-
-        # 2. 绘制 5 片舒展有致的放射状叶片（果萼）
-        num_leaves = 5
-        leaf_angle_offset = self._leaf_wave
-        
-        for i in range(num_leaves):
-            # 5 片叶的固定基本角度偏移
-            base_angle = (2 * math.pi / num_leaves) * i - math.pi / 2
-            
-            # 加入微弱的呼吸/叶片微颤动画效果
-            angle = base_angle + math.sin(leaf_angle_offset * 0.5 + i) * 0.05
-            
-            if is_droopy:
-                droop = 0.45 if (is_paused or not self._is_running) else 0.12
-                angle += math.sin(leaf_angle_offset + i) * droop
-
-            leaf_len = radius * 0.46
-            # 叶片尖端位置
-            tip_x = center.x() + math.cos(angle) * (radius * 0.48 + leaf_len * 0.6)
-            tip_y = center.y() - radius * 0.82 + math.sin(angle) * (radius * 0.38 + leaf_len * 0.5)
-            
-            # 叶片连接中心的左/右底角
-            base_left_x = center.x() + math.cos(angle - 0.48) * radius * 0.12
-            base_left_y = center.y() - radius * 0.85 + math.sin(angle - 0.48) * radius * 0.08
-            
-            base_right_x = center.x() + math.cos(angle + 0.48) * radius * 0.12
-            base_right_y = center.y() - radius * 0.85 + math.sin(angle + 0.48) * radius * 0.08
-            
-            # 建立一片叶子的弧形边缘路径
-            leaf_path = QPainterPath()
-            leaf_path.moveTo(base_left_x, base_left_y)
-            # 左侧控制点
-            ctrl_left_x = center.x() + math.cos(angle - 0.28) * (radius * 0.2 + leaf_len * 0.5)
-            ctrl_left_y = center.y() - radius * 0.82 + math.sin(angle - 0.28) * (radius * 0.15 + leaf_len * 0.4)
-            leaf_path.quadTo(QPointF(ctrl_left_x, ctrl_left_y), QPointF(tip_x, tip_y))
-            
-            # 右侧控制点
-            ctrl_right_x = center.x() + math.cos(angle + 0.28) * (radius * 0.2 + leaf_len * 0.5)
-            ctrl_right_y = center.y() - radius * 0.82 + math.sin(angle + 0.28) * (radius * 0.15 + leaf_len * 0.4)
-            leaf_path.quadTo(QPointF(ctrl_right_x, ctrl_right_y), QPointF(base_right_x, base_right_y))
-            leaf_path.closeSubpath()
-            
-            # 叶子色泽渐变（内深外浅）
-            leaf_grad = QRadialGradient(QPointF(center.x(), center.y() - radius * 0.85), radius * 0.8)
-            leaf_grad.setColorAt(0, base_green)
-            leaf_grad.setColorAt(1, tip_green)
-            
-            painter.fillPath(leaf_path, leaf_grad)
-
-    def _draw_tomato_face(self, painter, center, radius,
-                         is_relax=False, is_cancelled=False):
-        """已删除番茄表情，保持番茄纯净高档质感"""
-        pass
-
-    def _draw_sleep_bubble(self, painter, center, radius):
-        """已停用Zzz睡觉气泡"""
-        pass
-
-    def _draw_time_display(self, painter, center, radius, is_paused=False):
-        """在番茄中央绘制清晰倒计时时间"""
-        if self._mode == "cancelled":
-            text = "自由专注"
-            font_size = max(13, int(radius * 0.25))
-        else:
-            minutes = max(0, self._remaining_seconds) // 60
-            seconds = max(0, self._remaining_seconds) % 60
-            text = f"{minutes:02d}:{seconds:02d}"
-            font_size = max(18, int(radius * 0.36))
-
-        font = QFont("Microsoft YaHei UI", font_size, QFont.Weight.Bold)
-        painter.setFont(font)
-
-        # 计算文字偏移（如果暂停，稍微下移以留出暂停图标空间）
-        y_offset = radius * 0.08 if is_paused else 0
-        text_rect = QRectF(center.x() - radius * 0.85,
-                           center.y() - radius * 0.28 + y_offset,
-                           radius * 1.7, radius * 0.56)
-
-        # 文字背景药丸微光，保证无论何种番茄色彩都极致清晰
-        pill_rect = QRectF(text_rect.x() + radius * 0.1, text_rect.y() + radius * 0.05,
-                           text_rect.width() - radius * 0.2, text_rect.height() - radius * 0.1)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor(0, 0, 0, 45 if not is_paused else 70))
-        painter.drawRoundedRect(pill_rect, pill_rect.height() / 2, pill_rect.height() / 2)
-
-        # 绘制主文字
-        painter.setPen(QColor(255, 255, 255, 250))
-        painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, text)
-
-    def _draw_pause_overlay(self, painter, center, radius):
-        """绘制通用的暂停半透明遮罩与状态指示"""
-        # 创建半透明遮罩层
-        overlay_path = QPainterPath()
-        overlay_rect = QRectF(center.x() - radius * 1.05, center.y() - radius * 0.95,
-                             radius * 2.1, radius * 1.9)
-        overlay_path.addEllipse(overlay_rect)
-        painter.fillPath(overlay_path, QColor(0, 0, 0, 45))
-
-        # 小巧精致的暂停标志放在时间上方
-        pause_h = radius * 0.18
-        pause_w = radius * 0.06
-        pause_spacing = radius * 0.07
-        pause_y = center.y() - radius * 0.38
-
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor(255, 255, 255, 220))
-        p1 = QRectF(center.x() - pause_spacing/2 - pause_w, pause_y, pause_w, pause_h)
-        p2 = QRectF(center.x() + pause_spacing/2, pause_y, pause_w, pause_h)
-        painter.drawRoundedRect(p1, 2, 2)
-        painter.drawRoundedRect(p2, 2, 2)
-
-        # 绘制倒计时
-        self._draw_time_display(painter, center, radius, is_paused=True)
-
-    def _draw_progress_ring(self, painter, center, radius, progress,
-                           ring_color=None):
-        """绘制进度环"""
-        if ring_color is None:
-            ring_color = QColor(235, 94, 76)  # 暖意珊瑚番茄红进度环
-
-        # 环的宽度
-        ring_width = 10
-
-        # 背景环（半透明）
-        background_pen = QPen(QColor(200, 200, 200, 60), ring_width)
-        background_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
-        painter.setPen(background_pen)
+        # 底环粉白轨道
+        bg_color = QColor("#feebeb") if self._mode != "relax" else QColor("#fef3e6")
+        bg_pen = QPen(bg_color, ring_w, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+        painter.setPen(bg_pen)
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawEllipse(center, radius, radius)
 
-        # 进度环
+        # 激活的圆弧（珊瑚红/琥珀橙）
+        accent_color = QColor("#ff6350") if self._mode != "relax" else QColor("#f59e0b")
         if progress > 0:
-            progress_pen = QPen(ring_color, ring_width)
-            progress_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
-            painter.setPen(progress_pen)
-
-            # 绘制弧形
-            rect_x = center.x() - radius
-            rect_y = center.y() - radius
-            rect_size = radius * 2
-
-            # 从12点方向开始（-90度）
-            start_angle = 90 * 16  # PyQt6 使用 1/16 度为单位
+            arc_pen = QPen(accent_color, ring_w, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+            painter.setPen(arc_pen)
+            rect = QRectF(center.x() - radius, center.y() - radius, radius * 2, radius * 2)
+            start_angle = 90 * 16
             span_angle = int(-progress * 360 * 16)
+            painter.drawArc(rect, start_angle, span_angle)
 
-            painter.drawArc(int(rect_x), int(rect_y), int(rect_size), int(rect_size),
-                           start_angle, span_angle)
+        # 12 点钟起点圆环小钮（精致同心红圈）
+        knob_c = QPointF(center.x(), center.y() - radius)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(accent_color)
+        painter.drawEllipse(knob_c, 7.0, 7.0)
+        painter.setBrush(QColor("#ffffff"))
+        painter.drawEllipse(knob_c, 2.8, 2.8)
+
+        painter.restore()
+
+    def _draw_white_card(self, painter, center, radius):
+        """绘制纯白浮动主卡片与扩散软阴影"""
+        painter.save()
+        for offset_y, alpha, spread in [(4, 18, 1.05), (7, 10, 1.10), (10, 5, 1.15)]:
+            shadow_rect = QRectF(center.x() - radius * spread, center.y() - radius * spread + offset_y,
+                                 radius * spread * 2, radius * spread * 2)
+            shadow_grad = QRadialGradient(center.x(), center.y() + offset_y, radius * spread)
+            shadow_grad.setColorAt(0.70, QColor(0, 0, 0, alpha))
+            shadow_grad.setColorAt(0.95, QColor(0, 0, 0, alpha // 3))
+            shadow_grad.setColorAt(1.0, QColor(0, 0, 0, 0))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(shadow_grad)
+            painter.drawEllipse(shadow_rect)
+
+        # 纯白卡片圆盘
+        painter.setPen(QPen(QColor(0, 0, 0, 8), 1))
+        painter.setBrush(QColor("#ffffff"))
+        painter.drawEllipse(center, radius, radius)
+        painter.restore()
+
+    def _draw_chibi_tomato(self, painter, center, size):
+        """绘制饱满圆润的 3D 质感萌系小番茄"""
+        painter.save()
+        tw = size * 1.48
+        th = size * 1.00
+
+        # 番茄身体径向渐变，营造 3D 球体受光效果
+        body_grad = QRadialGradient(center.x() - tw * 0.18, center.y() - th * 0.18, tw * 0.72)
+        if self._mode == "relax":
+            body_grad.setColorAt(0.0, QColor("#ffb463"))
+            body_grad.setColorAt(0.58, QColor("#f59336"))
+            body_grad.setColorAt(1.0, QColor("#d97726"))
+        else:
+            body_grad.setColorAt(0.0, QColor("#ff7663"))
+            body_grad.setColorAt(0.58, QColor("#f44b36"))
+            body_grad.setColorAt(1.0, QColor("#d93826"))
+
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(body_grad)
+        body_rect = QRectF(center.x() - tw / 2, center.y() - th / 2, tw, th)
+        painter.drawEllipse(body_rect)
+
+        # 左上角柔和水灵高光椭圆
+        hl_rect = QRectF(center.x() - tw * 0.38, center.y() - th * 0.32, tw * 0.22, th * 0.22)
+        painter.setBrush(QColor(255, 255, 255, 175))
+        painter.drawEllipse(hl_rect)
+
+        # 旁边小微光亮点
+        hl_dot = QRectF(center.x() - tw * 0.42, center.y() - th * 0.16, tw * 0.08, tw * 0.08)
+        painter.setBrush(QColor(255, 255, 255, 140))
+        painter.drawEllipse(hl_dot)
+
+        # 顶部嫩绿星芒萼片 (5片绿叶)
+        leaf_brush = QBrush(QColor("#4ea85b"))
+        painter.setBrush(leaf_brush)
+        leaf_pts = [
+            [(0, -th * 0.44), (-5, -th * 0.44 - 10), (0, -th * 0.44 - 18), (5, -th * 0.44 - 10)],
+            [(-tw * 0.05, -th * 0.40), (-tw * 0.20, -th * 0.52), (-tw * 0.32, -th * 0.55), (-tw * 0.18, -th * 0.40)],
+            [(tw * 0.05, -th * 0.40), (tw * 0.20, -th * 0.52), (tw * 0.32, -th * 0.55), (tw * 0.18, -th * 0.40)],
+            [(-tw * 0.08, -th * 0.36), (-tw * 0.24, -th * 0.36), (-tw * 0.38, -th * 0.32), (-tw * 0.20, -th * 0.28)],
+            [(tw * 0.08, -th * 0.36), (tw * 0.24, -th * 0.36), (tw * 0.38, -th * 0.32), (tw * 0.20, -th * 0.28)],
+        ]
+        for pts in leaf_pts:
+            p = QPainterPath()
+            p.moveTo(center.x() + pts[0][0], center.y() + pts[0][1])
+            p.cubicTo(center.x() + pts[1][0], center.y() + pts[1][1],
+                      center.x() + pts[2][0], center.y() + pts[2][1],
+                      center.x() + pts[3][0], center.y() + pts[3][1])
+            p.closeSubpath()
+            painter.drawPath(p)
+
+        # 绿色小蒂把 (Stem)
+        stem_path = QPainterPath()
+        stem_path.moveTo(center.x() - 1, center.y() - th * 0.44)
+        stem_path.quadTo(center.x() - 6, center.y() - th * 0.60, center.x() + 3, center.y() - th * 0.68)
+        stem_pen = QPen(QColor("#3d7e46"), 3.2, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+        painter.setPen(stem_pen)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.drawPath(stem_path)
+
+        painter.restore()
+
+    def _draw_digital_clock(self, painter, cx, cy, inner_r):
+        """绘制清晰的大号倒计时数字 (25:00)"""
+        painter.save()
+        minutes = max(0, self._remaining_seconds) // 60
+        seconds = max(0, self._remaining_seconds) % 60
+        text = f"{minutes:02d}:{seconds:02d}"
+
+        font = QFont("Microsoft YaHei UI", int(inner_r * 0.38), QFont.Weight.Bold)
+        font.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing, -1.0)
+        painter.setFont(font)
+        painter.setPen(QColor("#2d2d2d"))
+
+        text_rect = QRectF(cx - inner_r * 0.85, cy - inner_r * 0.22, inner_r * 1.7, inner_r * 0.44)
+        painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, text)
+        painter.restore()
+
+    def _draw_status_pill(self, painter, cx, cy, inner_r):
+        """绘制下方状态指示胶囊 (淡粉背景 + 珊瑚红 || 暂停竖棒)"""
+        painter.save()
+        pw = inner_r * 0.42
+        ph = inner_r * 0.24
+        pill_rect = QRectF(cx - pw / 2, cy - ph / 2, pw, ph)
+
+        # 胶囊底色
+        pill_bg = QColor("#fdeeed") if self._mode != "relax" else QColor("#fef3e6")
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(pill_bg)
+        painter.drawRoundedRect(pill_rect, ph / 2, ph / 2)
+
+        # 胶囊内部图标：暂停 ||
+        bar_w = 4.2
+        bar_h = ph * 0.48
+        bar_spacing = 7.0
+        b_color = QColor("#ff6350") if self._mode != "relax" else QColor("#f59e0b")
+        painter.setBrush(b_color)
+
+        b1 = QRectF(cx - bar_spacing / 2 - bar_w, cy - bar_h / 2, bar_w, bar_h)
+        b2 = QRectF(cx + bar_spacing / 2, cy - bar_h / 2, bar_w, bar_h)
+        painter.drawRoundedRect(b1, 2, 2)
+        painter.drawRoundedRect(b2, 2, 2)
+        painter.restore()

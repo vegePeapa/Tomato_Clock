@@ -7,8 +7,9 @@ from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QLabel, QSpinBox, QCheckBox, QPushButton,
     QMenu, QSlider, QWidget, QTabWidget
 )
-from PyQt6.QtCore import QTimer, Qt, QDateTime, QUrl, QEvent
-from PyQt6.QtGui import QCloseEvent, QIcon, QAction, QFont
+from PyQt6.QtCore import QTimer, Qt, QDateTime, QUrl, QEvent, QRectF, QSize
+from PyQt6.QtGui import QCloseEvent, QIcon, QAction, QFont, QPainter, QPainterPath, QColor
+from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtMultimedia import QSoundEffect
 from ui_timer import Ui_Timer
 from tomato_timer_widget import TomatoTimerWidget
@@ -197,7 +198,7 @@ class SettingsDialog(QDialog):
         self.setObjectName("SettingsDialog")  # 设置对象名称匹配 QSS 选择器
         self.config = config.copy()  # 复制配置以便取消时不影响原配置
         self.setWindowTitle("设置")
-        self.setFixedSize(540, 520)
+        self.setFixedSize(520, 485)
 
         # 程序目录与音效试听初始化
         self.script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -259,7 +260,7 @@ class SettingsDialog(QDialog):
         # 添加底部分隔线和按钮区域
         line_widget = QWidget()
         line_widget.setFixedHeight(1)
-        line_widget.setStyleSheet("background-color: rgba(78, 204, 163, 0.25);")
+        line_widget.setStyleSheet("background-color: #f0ece9;")
         main_layout.addWidget(line_widget)
 
         button_layout = QHBoxLayout()
@@ -336,7 +337,7 @@ class SettingsDialog(QDialog):
         """创建卡片内的微细分隔线"""
         line = QWidget()
         line.setFixedHeight(1)
-        line.setStyleSheet("background-color: rgba(78, 204, 163, 0.15); margin: 2px 0;")
+        line.setStyleSheet("background-color: #f5ede8; margin: 4px 0;")
         return line
 
     def _create_time_settings_tab(self):
@@ -631,8 +632,10 @@ class TimerWindow(QDialog):
 
         self.setObjectName("TimerWindow")  # 设置对象名称以匹配 QSS 选择器 QDialog#TimerWindow
 
-        # 设置窗口标题
+        # 设置窗口标题与尺寸
         self.setWindowTitle("番茄钟计时器")
+        self.resize(450, 640)
+        self.setMinimumSize(420, 600)
 
 
         # ===== 初始化液体时间组件 =====
@@ -879,6 +882,51 @@ class TimerWindow(QDialog):
                 QTimer.singleShot(0, self.hide)
         super().changeEvent(event)
 
+    def paintEvent(self, event):
+        """绘制参考图上的背景插画与植物叶片"""
+        super().paintEvent(event)
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        w = self.width()
+        h = self.height()
+
+        # 1. 左上角粉色柔和波浪装饰
+        top_pink = QPainterPath()
+        top_pink.moveTo(0, 0)
+        top_pink.lineTo(w * 0.28, 0)
+        top_pink.cubicTo(w * 0.22, h * 0.08, w * 0.06, h * 0.14, 0, h * 0.16)
+        top_pink.closeSubpath()
+        painter.fillPath(top_pink, QColor(255, 218, 218, 70))
+
+        # 2. 右下角粉色柔和波浪装饰
+        bot_pink = QPainterPath()
+        bot_pink.moveTo(w, h)
+        bot_pink.lineTo(w * 0.65, h)
+        bot_pink.cubicTo(w * 0.70, h * 0.90, w * 0.88, h * 0.84, w, h * 0.82)
+        bot_pink.closeSubpath()
+        painter.fillPath(bot_pink, QColor(255, 218, 218, 70))
+
+        # 3. 左下角绿色清新植物叶片插画
+        leaf_path = os.path.join(self.script_dir, "assets", "leaf_deco.svg")
+        if os.path.exists(leaf_path):
+            renderer = QSvgRenderer(leaf_path)
+            if renderer.isValid():
+                target_rect = QRectF(-10, h - 110, 110, 110)
+                renderer.render(painter, target_rect)
+
+    def _toggle_mode_capsule(self):
+        """点击顶部模式胶囊快速在专注与休息之间切换"""
+        if not self.is_running:
+            if self.mode == TimerMode.FOCUS:
+                self.mode = TimerMode.RELAX
+                self.mode_seconds_left = self.DEFAULT_RELAX
+            else:
+                self.mode = TimerMode.FOCUS
+                self.mode_seconds_left = self.DEFAULT_DURATION
+            self._update_display()
+            self._update_mode_label()
+            self._apply_style()
+
     def _update_tray_action_text(self):
         """更新托盘菜单中的开始/暂停文本"""
         if hasattr(self, 'tray_start_action'):
@@ -912,16 +960,16 @@ class TimerWindow(QDialog):
     def _update_mode_label(self):
         """更新模式标签显示"""
         mode_text = {
-            TimerMode.FOCUS: "🎯 专注模式",
-            TimerMode.RELAX: "☕ 休息时间",
-            TimerMode.COMPLETED: "✅ 已完成",
-            TimerMode.CANCELLED: "⚠️ 自由模式"
+            TimerMode.FOCUS: "专注模式",
+            TimerMode.RELAX: "休息时间",
+            TimerMode.COMPLETED: "已完成",
+            TimerMode.CANCELLED: "自由模式"
         }
         self.ui.mode_label.setText(mode_text.get(self.mode, "专注模式"))
 
     def _update_cycle_label(self):
         """更新循环次数标签"""
-        self.ui.cycle_label.setText(f"剩余循环: {self.cycle_left}")
+        self.ui.cycle_label.setText(str(self.cycle_left))
 
     def _load_config(self) -> dict:
         """加载配置文件"""
@@ -968,6 +1016,10 @@ class TimerWindow(QDialog):
         self.ui.finishButton.clicked.connect(self._task_complete)
         # 连接设置按钮
         self.ui.settingsButton.clicked.connect(self._open_settings)
+        # 连接顶部模式切换胶囊
+        self.ui.mode_label.clicked.connect(self._toggle_mode_capsule)
+        # 连接时钟主体点击快速暂停/继续
+        self.liquid_timer.clicked.connect(self._toggle_timer)
         # 注意：重置、取消、查看时间轴已移至"更多"菜单中，在 _create_more_menu 中连接
 
     @report
@@ -1042,7 +1094,10 @@ class TimerWindow(QDialog):
         else:
             self.duration_task_name = DEFAULT_TASK_NAME
         print('get task name, timer start')
-        self.ui.startButton.setText("暂停")
+        self.ui.startButton.setText(" 暂停专注")
+        pause_icon = os.path.join(self.script_dir, "assets", "icon_pause.svg")
+        if os.path.exists(pause_icon):
+            self.ui.startButton.setIcon(QIcon(pause_icon))
         self.timer.start(1000)
         self.is_running = True
 
@@ -1077,7 +1132,10 @@ class TimerWindow(QDialog):
             print('pressed start key, timer start')
             self.timer.start(1000)  # 每 1000ms (1秒) 触发一次
             self.is_running = True
-            self.ui.startButton.setText("暂停")
+            self.ui.startButton.setText(" 暂停专注")
+            pause_icon = os.path.join(self.script_dir, "assets", "icon_pause.svg")
+            if os.path.exists(pause_icon):
+                self.ui.startButton.setIcon(QIcon(pause_icon))
 
             # 更新番茄组件显示
             self._update_display()
@@ -1089,7 +1147,10 @@ class TimerWindow(QDialog):
             # 如果当前是专注时间段 暂停后记于内存 精细化追踪
             if self.mode == TimerMode.FOCUS or self.mode == TimerMode.CANCELLED:
                 self._recode_focus_log()
-            self.ui.startButton.setText("继续")
+            self.ui.startButton.setText(" 继续专注")
+            play_icon = os.path.join(self.script_dir, "assets", "icon_play.svg")
+            if os.path.exists(play_icon):
+                self.ui.startButton.setIcon(QIcon(play_icon))
 
             # 更新番茄组件显示（重要：让番茄进入暂停状态）
             self._update_display()
@@ -1178,24 +1239,6 @@ class TimerWindow(QDialog):
         self.ui.startButton.setText("暂停")
         self._update_tray_action_text()
 
-    """更新显示"""
-
-    def _update_total_duration_display(self):
-        """更新总专注时长的显示"""
-        total_seconds = self.total_duration_time
-
-        hours = total_seconds // 3600
-        remaining_seconds = total_seconds % 3600
-        minutes = remaining_seconds // 60
-        seconds = remaining_seconds % 60
-
-        if hours > 0:
-            time_text = f"总专注时长: {hours:02d}:{minutes:02d}:{seconds:02d}"
-        else:
-            time_text = f"总专注时长: {minutes:02d}:{seconds:02d}"
-
-        print(time_text)  # 调试输出
-
     @report
     def _reset_timer(self, *args, **kwargs):
         """重置所有状态"""
@@ -1205,7 +1248,10 @@ class TimerWindow(QDialog):
         self.mode = TimerMode.FOCUS
         self.cycle_left = self.DEFAULT_CYCLE_COUNT
         self.mode_seconds_left = self.DEFAULT_DURATION
-        self.ui.startButton.setText("开始")
+        self.ui.startButton.setText(" 开始专注")
+        play_icon = os.path.join(self.script_dir, "assets", "icon_play.svg")
+        if os.path.exists(play_icon):
+            self.ui.startButton.setIcon(QIcon(play_icon))
         self._apply_style()  # 应用专注模式样式
         self._update_mode_label()
         self._update_cycle_label()
@@ -1357,11 +1403,11 @@ class TimerWindow(QDialog):
         minutes = remaining_seconds // 60
         seconds = remaining_seconds % 60
         if hours > 0:
-            time_text = f"总专注时长: {hours:02d}:{minutes:02d}:{seconds:02d}"
+            time_text = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
         else:
-            time_text = f"总专注时长: {minutes:02d}:{seconds:02d}"
+            time_text = f"{minutes:02d}:{seconds:02d}"
 
-        # 更新显示
+        # 更新卡片数值显示
         self.ui.timer_duration_laber.setText(time_text)
 
     def _update_display(self):
