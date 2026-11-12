@@ -8,12 +8,14 @@
 - 下部精致珊瑚红暂停胶囊指示
 """
 import math
+import os
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtCore import Qt, QTimer, QPointF, QRectF, pyqtSignal
 from PyQt6.QtGui import (
     QPainter, QPainterPath, QColor, QFont, QRadialGradient,
     QPen, QBrush
 )
+from PyQt6.QtSvg import QSvgRenderer
 
 
 class TomatoTimerWidget(QWidget):
@@ -182,65 +184,33 @@ class TomatoTimerWidget(QWidget):
         painter.restore()
 
     def _draw_chibi_tomato(self, painter, center, size):
-        """绘制饱满圆润的 3D 质感萌系小番茄"""
+        """绘制饱满圆润的 3D 质感萌系小番茄 (加载紧密花萼与立体小蒂把的高清矢量 SVG)"""
         painter.save()
-        tw = size * 1.48
-        th = size * 1.00
+        tw = size * 1.50
+        th = size * 1.12
 
-        # 番茄身体径向渐变，营造 3D 球体受光效果
-        body_grad = QRadialGradient(center.x() - tw * 0.18, center.y() - th * 0.18, tw * 0.72)
-        if self._mode == "relax":
-            body_grad.setColorAt(0.0, QColor("#ffb463"))
-            body_grad.setColorAt(0.58, QColor("#f59336"))
-            body_grad.setColorAt(1.0, QColor("#d97726"))
-        else:
-            body_grad.setColorAt(0.0, QColor("#ff7663"))
-            body_grad.setColorAt(0.58, QColor("#f44b36"))
-            body_grad.setColorAt(1.0, QColor("#d93826"))
+        svg_name = "chibi_tomato_relax.svg" if self._mode == "relax" else "chibi_tomato.svg"
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        svg_path = os.path.join(script_dir, "assets", svg_name)
 
+        if os.path.exists(svg_path):
+            renderer = QSvgRenderer(svg_path)
+            if renderer.isValid():
+                target_rect = QRectF(center.x() - tw / 2, center.y() - th / 2, tw, th)
+                renderer.render(painter, target_rect)
+                painter.restore()
+                return
+
+        # 备选软绘逻辑
+        tw_fb = size * 1.48
+        th_fb = size * 1.00
+        body_grad = QRadialGradient(center.x() - tw_fb * 0.18, center.y() - th_fb * 0.18, tw_fb * 0.72)
+        body_grad.setColorAt(0.0, QColor("#ff7663"))
+        body_grad.setColorAt(0.58, QColor("#f44b36"))
+        body_grad.setColorAt(1.0, QColor("#d93826"))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(body_grad)
-        body_rect = QRectF(center.x() - tw / 2, center.y() - th / 2, tw, th)
-        painter.drawEllipse(body_rect)
-
-        # 左上角柔和水灵高光椭圆
-        hl_rect = QRectF(center.x() - tw * 0.38, center.y() - th * 0.32, tw * 0.22, th * 0.22)
-        painter.setBrush(QColor(255, 255, 255, 175))
-        painter.drawEllipse(hl_rect)
-
-        # 旁边小微光亮点
-        hl_dot = QRectF(center.x() - tw * 0.42, center.y() - th * 0.16, tw * 0.08, tw * 0.08)
-        painter.setBrush(QColor(255, 255, 255, 140))
-        painter.drawEllipse(hl_dot)
-
-        # 顶部嫩绿星芒萼片 (5片绿叶)
-        leaf_brush = QBrush(QColor("#4ea85b"))
-        painter.setBrush(leaf_brush)
-        leaf_pts = [
-            [(0, -th * 0.44), (-5, -th * 0.44 - 10), (0, -th * 0.44 - 18), (5, -th * 0.44 - 10)],
-            [(-tw * 0.05, -th * 0.40), (-tw * 0.20, -th * 0.52), (-tw * 0.32, -th * 0.55), (-tw * 0.18, -th * 0.40)],
-            [(tw * 0.05, -th * 0.40), (tw * 0.20, -th * 0.52), (tw * 0.32, -th * 0.55), (tw * 0.18, -th * 0.40)],
-            [(-tw * 0.08, -th * 0.36), (-tw * 0.24, -th * 0.36), (-tw * 0.38, -th * 0.32), (-tw * 0.20, -th * 0.28)],
-            [(tw * 0.08, -th * 0.36), (tw * 0.24, -th * 0.36), (tw * 0.38, -th * 0.32), (tw * 0.20, -th * 0.28)],
-        ]
-        for pts in leaf_pts:
-            p = QPainterPath()
-            p.moveTo(center.x() + pts[0][0], center.y() + pts[0][1])
-            p.cubicTo(center.x() + pts[1][0], center.y() + pts[1][1],
-                      center.x() + pts[2][0], center.y() + pts[2][1],
-                      center.x() + pts[3][0], center.y() + pts[3][1])
-            p.closeSubpath()
-            painter.drawPath(p)
-
-        # 绿色小蒂把 (Stem)
-        stem_path = QPainterPath()
-        stem_path.moveTo(center.x() - 1, center.y() - th * 0.44)
-        stem_path.quadTo(center.x() - 6, center.y() - th * 0.60, center.x() + 3, center.y() - th * 0.68)
-        stem_pen = QPen(QColor("#3d7e46"), 3.2, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
-        painter.setPen(stem_pen)
-        painter.setBrush(Qt.BrushStyle.NoBrush)
-        painter.drawPath(stem_path)
-
+        painter.drawEllipse(QRectF(center.x() - tw_fb / 2, center.y() - th_fb / 2, tw_fb, th_fb))
         painter.restore()
 
     def _draw_digital_clock(self, painter, cx, cy, inner_r):
