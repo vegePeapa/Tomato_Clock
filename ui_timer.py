@@ -56,9 +56,17 @@ class ModeCapsuleButton(QtWidgets.QPushButton):
         return QSize(max(130, s.width() + 10), 38)
 
     def setText(self, text: str):
-        clean_text = text.replace("🎯", "").replace("☕", "").replace("✅", "").replace("⚠️", "").strip()
+        clean_text = text.replace("🎯", "").replace("☕", "").replace("✅", "").replace("⚠️", "").replace("⏱️", "").strip()
         self.text_lbl.setText(clean_text)
-        if "休息" in text:
+        if "自由" in clean_text:
+            free_path = os.path.join(ASSETS_DIR, "icon_free.svg")
+            if os.path.exists(free_path):
+                self.icon_lbl.setPixmap(QIcon(free_path).pixmap(18, 18))
+            else:
+                target_path = os.path.join(ASSETS_DIR, "icon_target.svg")
+                if os.path.exists(target_path):
+                    self.icon_lbl.setPixmap(QIcon(target_path).pixmap(18, 18))
+        elif "休息" in clean_text:
             coffee_path = os.path.join(ASSETS_DIR, "icon_coffee.svg")
             if os.path.exists(coffee_path):
                 self.icon_lbl.setPixmap(QIcon(coffee_path).pixmap(18, 18))

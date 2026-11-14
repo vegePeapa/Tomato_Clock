@@ -26,6 +26,7 @@ class TimerMode:
     RELAX = "休息"
     COMPLETED = "完成"
     CANCELLED = "专注(无番茄计时)"
+    FREE = CANCELLED
 
 
 def get_app_data_dir():

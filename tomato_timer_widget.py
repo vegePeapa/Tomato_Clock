@@ -86,7 +86,10 @@ class TomatoTimerWidget(QWidget):
         self._draw_sun_rays(painter, center, radius)
 
         # 2. 外部进度环与起始圆钮
-        progress = self._remaining_seconds / max(1, self._total_seconds)
+        if self._mode == "cancelled":
+            progress = 1.0
+        else:
+            progress = self._remaining_seconds / max(1, self._total_seconds)
         self._draw_progress_ring(painter, center, radius, progress)
 
         # 3. 中央纯白圆形卡片（含多层柔和漫反射环境阴影）
@@ -214,13 +217,21 @@ class TomatoTimerWidget(QWidget):
         painter.restore()
 
     def _draw_digital_clock(self, painter, cx, cy, inner_r):
-        """绘制清晰的大号倒计时数字 (25:00)"""
+        """绘制清晰的大号倒计时/正向计时数字 (例如 25:00)"""
         painter.save()
-        minutes = max(0, self._remaining_seconds) // 60
-        seconds = max(0, self._remaining_seconds) % 60
-        text = f"{minutes:02d}:{seconds:02d}"
+        total_sec = max(0, self._remaining_seconds)
+        hours = total_sec // 3600
+        minutes = (total_sec % 3600) // 60 if hours > 0 else total_sec // 60
+        seconds = total_sec % 60
 
-        font = QFont("Microsoft YaHei UI", int(inner_r * 0.38), QFont.Weight.Bold)
+        if hours > 0:
+            text = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+            font_size = int(inner_r * 0.28)
+        else:
+            text = f"{minutes:02d}:{seconds:02d}"
+            font_size = int(inner_r * 0.38)
+
+        font = QFont("Microsoft YaHei UI", font_size, QFont.Weight.Bold)
         font.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing, -1.0)
         painter.setFont(font)
         painter.setPen(QColor("#2d2d2d"))

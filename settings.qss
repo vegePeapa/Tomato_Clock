@@ -76,15 +76,15 @@ QLabel {
 
 /* ===== 数字微调输入框 (QSpinBox) ===== */
 QSpinBox {
-    padding: 6px 30px 6px 12px;
-    border: 1px solid #e5dfda;
-    border-radius: 10px;
+    padding: 2px 20px 2px 8px;
+    border: 1px solid #e0d8d4;
+    border-radius: 7px;
     background-color: #faf8f7;
     color: #2b2523;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
-    min-height: 32px;
-    max-width: 130px;
+    min-height: 24px;
+    max-height: 28px;
 }
 QSpinBox:hover {
     border-color: #ffb8b0;
@@ -97,36 +97,36 @@ QSpinBox:focus {
 QSpinBox::up-button {
     subcontrol-origin: border;
     subcontrol-position: top right;
-    width: 24px;
-    height: 16px;
+    width: 20px;
+    height: 13px;
     border: none;
     background: transparent;
-    border-top-right-radius: 9px;
+    border-top-right-radius: 6px;
 }
 QSpinBox::up-button:hover {
     background: #eee8e4;
 }
 QSpinBox::up-arrow {
     image: url({ASSET_DIR}/assets/arrow_up.svg);
-    width: 12px;
-    height: 12px;
+    width: 9px;
+    height: 9px;
 }
 QSpinBox::down-button {
     subcontrol-origin: border;
     subcontrol-position: bottom right;
-    width: 24px;
-    height: 16px;
+    width: 20px;
+    height: 13px;
     border: none;
     background: transparent;
-    border-bottom-right-radius: 9px;
+    border-bottom-right-radius: 6px;
 }
 QSpinBox::down-button:hover {
     background: #eee8e4;
 }
 QSpinBox::down-arrow {
     image: url({ASSET_DIR}/assets/arrow_down.svg);
-    width: 12px;
-    height: 12px;
+    width: 9px;
+    height: 9px;
 }
 
 /* ===== 声音滑块 (QSlider) ===== */

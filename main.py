@@ -301,7 +301,7 @@ class SettingsDialog(QDialog):
         """创建带标题、描述和控制组件的标准行"""
         row = QWidget()
         layout = QHBoxLayout(row)
-        layout.setContentsMargins(0, 4, 0, 4)
+        layout.setContentsMargins(0, 3, 0, 3)
         layout.setSpacing(12)
 
         t_layout = QVBoxLayout()
@@ -316,7 +316,7 @@ class SettingsDialog(QDialog):
         layout.addLayout(t_layout)
 
         layout.addStretch()
-        layout.addWidget(control)
+        layout.addWidget(control, alignment=Qt.AlignmentFlag.AlignVCenter)
         return row
 
     def _create_checkbox_row(self, checkbox: QCheckBox, desc: str) -> QWidget:
@@ -337,7 +337,7 @@ class SettingsDialog(QDialog):
         """创建卡片内的微细分隔线"""
         line = QWidget()
         line.setFixedHeight(1)
-        line.setStyleSheet("background-color: #f5ede8; margin: 4px 0;")
+        line.setStyleSheet("background-color: #f0ece9; margin: 4px 0;")
         return line
 
     def _create_time_settings_tab(self):
@@ -351,15 +351,15 @@ class SettingsDialog(QDialog):
         layout.addWidget(self._create_section_header("番茄节奏"))
         card1 = self._create_card()
         c1_layout = QVBoxLayout(card1)
-        c1_layout.setContentsMargins(16, 10, 16, 10)
-        c1_layout.setSpacing(8)
+        c1_layout.setContentsMargins(16, 12, 16, 12)
+        c1_layout.setSpacing(6)
 
         # 专注时长
         self.focus_spin = QSpinBox()
         self.focus_spin.setRange(5, 90)
         self.focus_spin.setSingleStep(5)
         self.focus_spin.setSuffix(" 分钟")
-        self.focus_spin.setFixedWidth(120)
+        self.focus_spin.setFixedSize(118, 28)
         c1_layout.addWidget(self._create_row("专注时长", "单次番茄钟专注工作时长", self.focus_spin))
 
         c1_layout.addWidget(self._create_inner_divider())
@@ -369,7 +369,7 @@ class SettingsDialog(QDialog):
         self.relax_spin.setRange(1, 30)
         self.relax_spin.setSingleStep(1)
         self.relax_spin.setSuffix(" 分钟")
-        self.relax_spin.setFixedWidth(120)
+        self.relax_spin.setFixedSize(118, 28)
         c1_layout.addWidget(self._create_row("休息时长", "专注结束后的短休息时长", self.relax_spin))
 
         c1_layout.addWidget(self._create_inner_divider())
@@ -379,7 +379,7 @@ class SettingsDialog(QDialog):
         self.cycle_spin.setRange(1, 10)
         self.cycle_spin.setSingleStep(1)
         self.cycle_spin.setSuffix(" 次")
-        self.cycle_spin.setFixedWidth(120)
+        self.cycle_spin.setFixedSize(118, 28)
         c1_layout.addWidget(self._create_row("循环轮次", "一个完整大周期包含的专注次数", self.cycle_spin))
 
         layout.addWidget(card1)
@@ -388,14 +388,14 @@ class SettingsDialog(QDialog):
         layout.addWidget(self._create_section_header("超时保护"))
         card2 = self._create_card()
         c2_layout = QVBoxLayout(card2)
-        c2_layout.setContentsMargins(16, 10, 16, 10)
-        c2_layout.setSpacing(8)
+        c2_layout.setContentsMargins(16, 12, 16, 12)
+        c2_layout.setSpacing(6)
 
         self.pause_spin = QSpinBox()
         self.pause_spin.setRange(1, 60)
         self.pause_spin.setSingleStep(1)
         self.pause_spin.setSuffix(" 分钟")
-        self.pause_spin.setFixedWidth(120)
+        self.pause_spin.setFixedSize(118, 28)
         c2_layout.addWidget(self._create_row("最大暂停时间", "暂停超过此时长将自动结算并重置", self.pause_spin))
 
         layout.addWidget(card2)
@@ -419,7 +419,7 @@ class SettingsDialog(QDialog):
         # 启用声音开关
         self.sound_checkbox = QCheckBox("启用提示音")
         self.sound_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.sound_checkbox.setStyleSheet("font-size: 14px; font-weight: 700; color: #1b4332;")
+        self.sound_checkbox.setStyleSheet("font-size: 14px; font-weight: 700; color: #2b2523;")
         c_layout.addWidget(self._create_checkbox_row(
             self.sound_checkbox,
             "在专注完成、休息结束或计时提醒时播放提示音"
@@ -449,18 +449,18 @@ class SettingsDialog(QDialog):
         self.volume_slider.setRange(0, 100)
         self.volume_slider.setFixedWidth(120)
         self.volume_slider.setCursor(Qt.CursorShape.PointingHandCursor)
-        vol_layout.addWidget(self.volume_slider)
+        vol_layout.addWidget(self.volume_slider, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         self.volume_label = QLabel("80%")
         self.volume_label.setFixedWidth(38)
-        self.volume_label.setStyleSheet("font-size: 13px; font-weight: 600; color: #1b4332;")
-        vol_layout.addWidget(self.volume_label)
+        self.volume_label.setStyleSheet("font-size: 13px; font-weight: 600; color: #2b2523;")
+        vol_layout.addWidget(self.volume_label, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         self.preview_btn = QPushButton("试听")
         self.preview_btn.setObjectName("previewSoundButton")
         self.preview_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.preview_btn.clicked.connect(self._play_preview_sound)
-        vol_layout.addWidget(self.preview_btn)
+        vol_layout.addWidget(self.preview_btn, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         c_layout.addWidget(vol_row)
 
@@ -558,7 +558,7 @@ class SettingsDialog(QDialog):
         spinbox.setRange(min_val, max_val)
         spinbox.setSingleStep(step)
         spinbox.setSuffix(suffix)
-        spinbox.setFixedWidth(120)
+        spinbox.setFixedSize(118, 28)
         if tooltip:
             spinbox.setToolTip(tooltip)
         parent_layout.addWidget(self._create_row(label_text, tooltip or "", spinbox))
@@ -671,8 +671,8 @@ class TimerWindow(QDialog):
         reset_action.triggered.connect(self._reset_timer)
         self.more_menu.addAction(reset_action)
 
-        # 取消番茄钟
-        self.cancel_action = QAction("取消番茄钟", self)
+        # 模式切换
+        self.cancel_action = QAction("切换至自由模式", self)
         self.cancel_action.triggered.connect(self._cancel_tomato_clock)
         self.more_menu.addAction(self.cancel_action)
 
@@ -719,6 +719,7 @@ class TimerWindow(QDialog):
         self.total_duration_time = 0  # 总专注时长
         self.is_running = False
         self.mode = TimerMode.FOCUS            # 当前模式：从专注开始
+        self.free_seconds_elapsed = 0          # 自由模式已计秒数
         self.cycle_left = self.DEFAULT_CYCLE_COUNT  # 剩余循环次数
         self.mode_seconds_left = self.DEFAULT_DURATION  # 当前模式剩余时间 (秒)
         self.current_focus_start_time = QDateTime()  # 存储当前专注时段的开始时间
@@ -915,17 +916,20 @@ class TimerWindow(QDialog):
                 renderer.render(painter, target_rect)
 
     def _toggle_mode_capsule(self):
-        """点击顶部模式胶囊快速在专注与休息之间切换"""
+        """点击顶部模式胶囊快速在专注模式与自由模式之间切换"""
         if not self.is_running:
             if self.mode == TimerMode.FOCUS:
-                self.mode = TimerMode.RELAX
-                self.mode_seconds_left = self.DEFAULT_RELAX
+                self.mode = TimerMode.CANCELLED
+                self.free_seconds_elapsed = 0
             else:
                 self.mode = TimerMode.FOCUS
                 self.mode_seconds_left = self.DEFAULT_DURATION
             self._update_display()
             self._update_mode_label()
+            self._update_cycle_label()
             self._apply_style()
+        else:
+            self._show_notification("提示", "当前计时进行中，请先暂停后再切换模式")
 
     def _update_tray_action_text(self):
         """更新托盘菜单中的开始/暂停文本"""
@@ -966,10 +970,19 @@ class TimerWindow(QDialog):
             TimerMode.CANCELLED: "自由模式"
         }
         self.ui.mode_label.setText(mode_text.get(self.mode, "专注模式"))
+        if self.mode == TimerMode.FOCUS:
+            self.ui.mode_label.setToolTip("当前: 专注模式 (点击切换至自由模式)")
+        elif self.mode == TimerMode.CANCELLED:
+            self.ui.mode_label.setToolTip("当前: 自由模式 (点击切换至专注模式)")
+        else:
+            self.ui.mode_label.setToolTip("点击切换模式")
 
     def _update_cycle_label(self):
         """更新循环次数标签"""
-        self.ui.cycle_label.setText(str(self.cycle_left))
+        if self.mode == TimerMode.CANCELLED:
+            self.ui.cycle_label.setText("∞")
+        else:
+            self.ui.cycle_label.setText(str(self.cycle_left))
 
     def _load_config(self) -> dict:
         """加载配置文件"""
@@ -1078,6 +1091,9 @@ class TimerWindow(QDialog):
 
             # 更新显示
             self._update_display()
+        else:
+            self.free_seconds_elapsed = 0
+            self._update_display()
 
         # 询问下一个任务 - 使用图形界面输入对话框
         print('timer stop to ask task name')
@@ -1161,9 +1177,15 @@ class TimerWindow(QDialog):
     def _update_timer_tick(self):
         """QTimer 每秒触发的槽函数：倒数、切换模式、更新 UI、记录学习总时长"""
 
-        if self.mode_seconds_left > 0:
+        if self.mode == TimerMode.CANCELLED:
+            # 自由模式：正向计时，无时间上限
+            self.total_duration_time += 1
+            self.free_seconds_elapsed += 1
+            self._update_total_duration_display()
+            self._update_display()
+        elif self.mode_seconds_left > 0:
             # 如果为专注段增加学习总时长
-            if self.mode == TimerMode.FOCUS or self.mode == TimerMode.CANCELLED:
+            if self.mode == TimerMode.FOCUS:
                 self.total_duration_time += 1
                 self._update_total_duration_display()
             self.mode_seconds_left -= 1
@@ -1227,11 +1249,11 @@ class TimerWindow(QDialog):
                 "休息结束，开始专注！", f"现在是新的专注时段，剩余 {self.DEFAULT_DURATION // 60} 分钟。")
 
         elif self.mode == TimerMode.CANCELLED:
-            self.mode_seconds_left = float('inf')  # 无限时长
+            self.free_seconds_elapsed = 0
             self._update_mode_label()
+            self._update_cycle_label()
             self._update_display()
-            
-            return  # 取消番茄钟 不会自动开启时间，顺着点击按钮前的模式(时间是否暂停)来
+            return
 
         print('switched model successfully , timer start')
         self.timer.start(1000)
@@ -1245,6 +1267,7 @@ class TimerWindow(QDialog):
         print('reset all , timer stop')
         self.timer.stop()
         self.is_running = False
+        self.free_seconds_elapsed = 0
         self.mode = TimerMode.FOCUS
         self.cycle_left = self.DEFAULT_CYCLE_COUNT
         self.mode_seconds_left = self.DEFAULT_DURATION
@@ -1425,20 +1448,23 @@ class TimerWindow(QDialog):
         self.liquid_timer.set_running(self.is_running)
 
         if self.mode == TimerMode.CANCELLED:
-            self.liquid_timer.set_time(0, 0)
+            self.liquid_timer.set_time(
+                self.DEFAULT_DURATION,
+                self.free_seconds_elapsed
+            )
             if hasattr(self, 'cancel_action'):
-                self.cancel_action.setText("重新开启番茄钟")
+                self.cancel_action.setText("切换至专注模式")
             elif len(self.more_menu.actions()) > 1:
-                self.more_menu.actions()[1].setText("重新开启番茄钟")
+                self.more_menu.actions()[1].setText("切换至专注模式")
         else:
             self.liquid_timer.set_time(
                 self._get_current_total_duration(),
                 self.mode_seconds_left
             )
             if hasattr(self, 'cancel_action'):
-                self.cancel_action.setText("自由记录")
+                self.cancel_action.setText("切换至自由模式")
             elif len(self.more_menu.actions()) > 1:
-                self.more_menu.actions()[1].setText("自由记录")
+                self.more_menu.actions()[1].setText("切换至自由模式")
     def _get_current_total_duration(self):
         """获取当前模式的总时长"""
         if self.mode == TimerMode.FOCUS or self.mode == TimerMode.CANCELLED:
@@ -1449,16 +1475,8 @@ class TimerWindow(QDialog):
             return self.mode_seconds_left
     @report
     def _cancel_tomato_clock(self, *args, **kwargs):
-        if self.mode == TimerMode.CANCELLED:
-            print("重新开启番茄钟")
-            # 如果已经是取消状态，重新开始计时器
-            self._reset_timer()
-            self._update_display()
-            return
-        # 取消番茄钟
-        print("取消番茄钟")
-        self.mode = TimerMode.CANCELLED
-        self._switch_mode()
+        """通过更多菜单触发模式切换"""
+        self._toggle_mode_capsule()
 
     def time_to_seconds(self, time_str):
         """接收 HH:MM:SS 或 MM:SS 格式的时间字符串，返回对应的秒数整数"""
