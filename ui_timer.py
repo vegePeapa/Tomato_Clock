@@ -2,7 +2,7 @@
 番茄钟 UI 界面布局定义 - 还原精致手绘 Q 版番茄设计风格
 包含：
 - ModeCapsuleButton: 顶部模式胶囊切换按钮 (Target / Coffee 图标 + 模式名 + 下拉箭头)
-- 顶部双圆形白底投影按钮 (设置 ⚙、更多操作 ⋮)
+- 顶部三枚圆形白底按钮 (时间轴 📅、设置 ⚙、更多操作 ⋮)
 - 核心时间显示容器 (挂载 TomatoTimerWidget)
 - 并列双白色数据卡片 (总专注时长卡片、剩余循环卡片)
 - 底部胶囊核心操作按钮 (开始专注大红渐变胶囊、结束任务白底旗帜胶囊)
@@ -92,13 +92,24 @@ class Ui_Timer(object):
 
         # ===== 1. 顶部状态栏 =====
         self.topBarLayout = QtWidgets.QHBoxLayout()
-        self.topBarLayout.setSpacing(12)
+        self.topBarLayout.setSpacing(10)
 
         # 模式切换胶囊
         self.mode_label = ModeCapsuleButton(parent=Dialog)
         self.topBarLayout.addWidget(self.mode_label)
 
         self.topBarLayout.addStretch()
+
+        # 时间轴 / 专注日历按钮（圆形白底）
+        self.timelineButton = QtWidgets.QPushButton(parent=Dialog)
+        self.timelineButton.setObjectName("timelineButton")
+        self.timelineButton.setFixedSize(44, 44)
+        self.timelineButton.setCursor(QtGui.QCursor(Qt.CursorShape.PointingHandCursor))
+        timeline_path = os.path.join(ASSETS_DIR, "icon_timeline.svg")
+        if os.path.exists(timeline_path):
+            self.timelineButton.setIcon(QIcon(timeline_path))
+            self.timelineButton.setIconSize(QSize(21, 21))
+        self.topBarLayout.addWidget(self.timelineButton)
 
         # 设置按钮（圆形白底）
         self.settingsButton = QtWidgets.QPushButton(parent=Dialog)
@@ -242,6 +253,7 @@ class Ui_Timer(object):
         """设置UI国际化文本"""
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "番茄钟"))
+        self.timelineButton.setToolTip(_translate("Dialog", "查看时间轴与专注日历"))
         self.settingsButton.setToolTip(_translate("Dialog", "设置"))
         self.moreButton.setToolTip(_translate("Dialog", "更多操作"))
         self.secondaryInfoLabel.setText(_translate("Dialog", "点击右上角 · 查看更多操作"))

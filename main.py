@@ -687,13 +687,6 @@ class TimerWindow(QDialog):
         min_tray_action.triggered.connect(self._minimize_to_tray)
         self.more_menu.addAction(min_tray_action)
 
-        self.more_menu.addSeparator()
-
-        # 查看时间轴
-        timeline_action = QAction("查看时间轴", self)
-        timeline_action.triggered.connect(self._view_timeline)
-        self.more_menu.addAction(timeline_action)
-
         # 连接更多按钮到菜单
         self.ui.moreButton.setMenu(self.more_menu)
 
@@ -1038,13 +1031,14 @@ class TimerWindow(QDialog):
         self.ui.startButton.clicked.connect(self._toggle_timer)
         # 连接结束任务按钮到控制函数
         self.ui.finishButton.clicked.connect(self._task_complete)
-        # 连接设置按钮
+        # 连接时间轴按钮与设置按钮
+        self.ui.timelineButton.clicked.connect(self._view_timeline)
         self.ui.settingsButton.clicked.connect(self._open_settings)
         # 连接顶部模式切换胶囊
         self.ui.mode_label.clicked.connect(self._toggle_mode_capsule)
         # 连接时钟内部小胶囊点击快速开始/暂停
         self.liquid_timer.clicked.connect(self._toggle_timer)
-        # 注意：重置、切换模式、查看时间轴已移至"更多"菜单中，在 _create_more_menu 中连接
+        # 注意：重置、切换模式、最小化已移至"更多"菜单中，在 _create_more_menu 中连接
 
     @report
     def _view_timeline(self, *args, **kwargs):

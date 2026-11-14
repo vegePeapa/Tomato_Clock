@@ -23,8 +23,8 @@ QPushButton#modeCapsule:pressed {
     background-color: #fad5d9;
 }
 
-/* 顶部圆形工具按钮（设置/更多） */
-QPushButton#settingsButton, QPushButton#moreButton {
+/* 顶部圆形工具按钮（时间轴/设置/更多） */
+QPushButton#timelineButton, QPushButton#settingsButton, QPushButton#moreButton {
     background-color: #ffffff;
     border: 1px solid #f2eeee;
     border-radius: 22px;
@@ -35,11 +35,11 @@ QPushButton#settingsButton, QPushButton#moreButton {
     padding: 0px;
     outline: none;
 }
-QPushButton#settingsButton:hover, QPushButton#moreButton:hover {
+QPushButton#timelineButton:hover, QPushButton#settingsButton:hover, QPushButton#moreButton:hover {
     background-color: #fafafa;
     border-color: #e5e0e0;
 }
-QPushButton#settingsButton:pressed, QPushButton#moreButton:pressed {
+QPushButton#timelineButton:pressed, QPushButton#settingsButton:pressed, QPushButton#moreButton:pressed {
     background-color: #f0f0f0;
 }
 
