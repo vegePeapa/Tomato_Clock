@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" width="160" height="120">
+  <defs>
+    <!-- 番茄主体 3D 饱满渐变 (自由模式 - 晴空湛蓝受光) -->
+    <radialGradient id="tomatoBody" cx="36%" cy="40%" r="62%" fx="30%" fy="34%">
+      <stop offset="0%" stop-color="#7bc2ff"/>
+      <stop offset="35%" stop-color="#4794f6"/>
+      <stop offset="75%" stop-color="#276ed8"/>
+      <stop offset="100%" stop-color="#184fa8"/>
+    </radialGradient>
+
+    <!-- 蒂叶在果皮上的柔和软阴影 -->
+    <radialGradient id="calyxShadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.24"/>
+      <stop offset="65%" stop-color="#000000" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- 蒂把立体渐变 -->
+    <linearGradient id="stemGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#46994c"/>
+      <stop offset="35%" stop-color="#69c46f"/>
+      <stop offset="75%" stop-color="#3f8f44"/>
+      <stop offset="100%" stop-color="#2a662e"/>
+    </linearGradient>
+
+    <!-- 后方两叶渐变 -->
+    <linearGradient id="backLeafGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#347539"/>
+      <stop offset="50%" stop-color="#47994c"/>
+      <stop offset="100%" stop-color="#5cb561"/>
+    </linearGradient>
+
+    <!-- 前方垂贴两叶渐变 -->
+    <linearGradient id="frontLeafGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5cb762"/>
+      <stop offset="60%" stop-color="#489d4d"/>
+      <stop offset="100%" stop-color="#337438"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 1. 饱满可爱的晴空蓝番茄主体 -->
+  <path d="M 80,34
+           C 104,33 145,41 146,70
+           C 147,97 121,114 80,114
+           C 39,114 13,97 14,70
+           C 15,41 56,33 80,34 Z"
+        fill="url(#tomatoBody)"/>
+
+  <!-- 2. 果实左上角水润果冻高光 -->
+  <ellipse cx="45" cy="54" rx="10.5" ry="7" transform="rotate(-35 45 54)" fill="#ffffff" opacity="0.75"/>
+  <circle cx="40" cy="67" r="3.2" fill="#ffffff" opacity="0.55"/>
+
+  <!-- 3. 蒂叶在果皮上的软漫反射阴影 -->
+  <ellipse cx="80" cy="38" rx="23" ry="9" fill="url(#calyxShadow)"/>
+
+  <!-- 4. 向上粗壮弯曲的蒂把 (Stem) -->
+  <path d="M 76,34
+           C 76,23 79,12 87,6
+           C 92,3 97,6 94,13
+           C 90,20 84,27 84,34 Z"
+        fill="url(#stemGrad)"/>
+  <!-- 蒂把顶部新鲜横切帽 -->
+  <ellipse cx="91" cy="7" rx="3.8" ry="2.2" transform="rotate(25 91 7)" fill="#7fd984"/>
+
+  <!-- 5. 紧凑聚拢、绝不分散的 4 片肉质主蒂叶 + 中心闭合微瓣 -->
+  <path d="M 80,34
+           C 74,27 67,16 56,18
+           C 49,20 49,29 63,33
+           C 71,35 77,34 80,34 Z"
+        fill="url(#backLeafGrad)"/>
+
+  <path d="M 80,34
+           C 86,27 93,16 104,18
+           C 111,20 111,29 97,33
+           C 89,35 83,34 80,34 Z"
+        fill="url(#backLeafGrad)"/>
+
+  <path d="M 80,34
+           C 72,33 58,36 52,44
+           C 49,48 54,52 64,49
+           C 73,45 78,38 80,34 Z"
+        fill="url(#frontLeafGrad)"/>
+
+  <path d="M 80,34
+           C 88,33 102,36 108,44
+           C 111,48 106,52 96,49
+           C 87,45 82,38 80,34 Z"
+        fill="url(#frontLeafGrad)"/>
+
+  <!-- 前中央小萼片与生长中心自然融合 -->
+  <path d="M 76,34
+           C 76,40 78,44 80,46
+           C 82,44 84,40 84,34 Z"
+        fill="#3f8f44"/>
+  <ellipse cx="80" cy="34" rx="5" ry="4" fill="#387a3e"/>
+</svg>

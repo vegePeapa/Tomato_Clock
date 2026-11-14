@@ -891,21 +891,29 @@ class TimerWindow(QDialog):
         w = self.width()
         h = self.height()
 
-        # 1. 左上角粉色柔和波浪装饰
-        top_pink = QPainterPath()
-        top_pink.moveTo(0, 0)
-        top_pink.lineTo(w * 0.28, 0)
-        top_pink.cubicTo(w * 0.22, h * 0.08, w * 0.06, h * 0.14, 0, h * 0.16)
-        top_pink.closeSubpath()
-        painter.fillPath(top_pink, QColor(255, 218, 218, 70))
+        # 按当前模式匹配四角柔和波浪装饰颜色
+        if self.mode == TimerMode.RELAX:
+            wave_color = QColor(255, 224, 185, 75)
+        elif self.mode == TimerMode.CANCELLED:
+            wave_color = QColor(198, 222, 255, 75)
+        else:
+            wave_color = QColor(255, 218, 218, 70)
 
-        # 2. 右下角粉色柔和波浪装饰
-        bot_pink = QPainterPath()
-        bot_pink.moveTo(w, h)
-        bot_pink.lineTo(w * 0.65, h)
-        bot_pink.cubicTo(w * 0.70, h * 0.90, w * 0.88, h * 0.84, w, h * 0.82)
-        bot_pink.closeSubpath()
-        painter.fillPath(bot_pink, QColor(255, 218, 218, 70))
+        # 1. 左上角柔和波浪装饰
+        top_wave = QPainterPath()
+        top_wave.moveTo(0, 0)
+        top_wave.lineTo(w * 0.28, 0)
+        top_wave.cubicTo(w * 0.22, h * 0.08, w * 0.06, h * 0.14, 0, h * 0.16)
+        top_wave.closeSubpath()
+        painter.fillPath(top_wave, wave_color)
+
+        # 2. 右下角柔和波浪装饰
+        bot_wave = QPainterPath()
+        bot_wave.moveTo(w, h)
+        bot_wave.lineTo(w * 0.65, h)
+        bot_wave.cubicTo(w * 0.70, h * 0.90, w * 0.88, h * 0.84, w, h * 0.82)
+        bot_wave.closeSubpath()
+        painter.fillPath(bot_wave, wave_color)
 
         # 3. 左下角绿色清新植物叶片插画
         leaf_path = os.path.join(self.script_dir, "assets", "leaf_deco.svg")
@@ -941,6 +949,9 @@ class TimerWindow(QDialog):
         if self.mode == TimerMode.RELAX:
             self.setProperty("timerMode", "relax")
             qss_file = "relax.qss"
+        elif self.mode == TimerMode.CANCELLED:
+            self.setProperty("timerMode", "free")
+            qss_file = "free.qss"
         else:
             self.setProperty("timerMode", "focus")
             qss_file = "focus.qss"
@@ -1031,9 +1042,9 @@ class TimerWindow(QDialog):
         self.ui.settingsButton.clicked.connect(self._open_settings)
         # 连接顶部模式切换胶囊
         self.ui.mode_label.clicked.connect(self._toggle_mode_capsule)
-        # 连接时钟主体点击快速暂停/继续
+        # 连接时钟内部小胶囊点击快速开始/暂停
         self.liquid_timer.clicked.connect(self._toggle_timer)
-        # 注意：重置、取消、查看时间轴已移至"更多"菜单中，在 _create_more_menu 中连接
+        # 注意：重置、切换模式、查看时间轴已移至"更多"菜单中，在 _create_more_menu 中连接
 
     @report
     def _view_timeline(self, *args, **kwargs):

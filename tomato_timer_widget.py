@@ -22,10 +22,41 @@ class TomatoTimerWidget(QWidget):
     """可爱圆润番茄时钟显示组件"""
     clicked = pyqtSignal()
 
+    _MODE_PALETTES = {
+        "focus": {
+            "ray": QColor(255, 120, 105, 210),
+            "ring_bg": "#feebeb",
+            "accent": "#ff6350",
+            "pill_bg": "#fdeeed",
+            "svg": "chibi_tomato.svg",
+            "fallback": ("#ff7663", "#f44b36", "#d93826"),
+        },
+        "relax": {
+            "ray": QColor(245, 158, 11, 210),
+            "ring_bg": "#fef3e6",
+            "accent": "#f59e0b",
+            "pill_bg": "#fef3e6",
+            "svg": "chibi_tomato_relax.svg",
+            "fallback": ("#ffb665", "#f69438", "#dc7520"),
+        },
+        "cancelled": {
+            "ray": QColor(59, 130, 246, 200),
+            "ring_bg": "#e4effd",
+            "accent": "#3b82f6",
+            "pill_bg": "#eaf2fe",
+            "svg": "chibi_tomato_free.svg",
+            "fallback": ("#7bc2ff", "#4794f6", "#276ed8"),
+        },
+    }
+
+    def _palette(self) -> dict:
+        """获取当前模式对应的配色与资源映射"""
+        return self._MODE_PALETTES.get(self._mode, self._MODE_PALETTES["focus"])
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setMinimumSize(320, 320)
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setMouseTracking(True)
 
         self._total_seconds = 25 * 60
         self._remaining_seconds = 25 * 60
@@ -33,6 +64,8 @@ class TomatoTimerWidget(QWidget):
         self._mode = "focus"
         self._breath = 0.0
         self._breath_dir = 1
+        self._pill_hovered = False
+        self._pill_pressed = False
 
         # 呼吸与微动动画计时器 (~30 FPS)
         self.timer = QTimer(self)
@@ -55,11 +88,49 @@ class TomatoTimerWidget(QWidget):
         self._is_running = is_running
         self.update()
 
+    def _status_pill_rect(self) -> QRectF:
+        """返回下方小状态胶囊的可点击区域"""
+        w = self.width()
+        h = self.height()
+        inner_r = min(w, h) * 0.42 * 0.90
+        cx = w / 2
+        cy = h / 2 + inner_r * 0.54
+        pw = inner_r * 0.42
+        ph = inner_r * 0.24
+        return QRectF(cx - pw / 2, cy - ph / 2, pw, ph)
+
+    def mouseMoveEvent(self, event):
+        hovered = self._status_pill_rect().contains(event.position())
+        if hovered != self._pill_hovered:
+            self._pill_hovered = hovered
+            self.setCursor(
+                Qt.CursorShape.PointingHandCursor if hovered else Qt.CursorShape.ArrowCursor
+            )
+            self.update()
+        super().mouseMoveEvent(event)
+
+    def leaveEvent(self, event):
+        if self._pill_hovered or self._pill_pressed:
+            self._pill_hovered = False
+            self._pill_pressed = False
+            self.setCursor(Qt.CursorShape.ArrowCursor)
+            self.update()
+        super().leaveEvent(event)
+
     def mousePressEvent(self, event):
-        """点击时钟中心区域触发 clicked 信号（可切换开始/暂停）"""
-        if event.button() == Qt.MouseButton.LeftButton:
-            self.clicked.emit()
+        """仅点击下方小胶囊区域时进入按下态，避免整个时钟区域误触"""
+        if event.button() == Qt.MouseButton.LeftButton and self._status_pill_rect().contains(event.position()):
+            self._pill_pressed = True
+            self.update()
         super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton and self._pill_pressed:
+            self._pill_pressed = False
+            if self._status_pill_rect().contains(event.position()):
+                self.clicked.emit()
+            self.update()
+        super().mouseReleaseEvent(event)
 
     def _tick(self):
         """呼吸动画微动"""
@@ -107,13 +178,12 @@ class TomatoTimerWidget(QWidget):
         self._draw_digital_clock(painter, center.x(), time_y, inner_r)
 
         # 6. 下部状态药丸（暂停/播放指示胶囊）
-        pill_y = center.y() + inner_r * 0.54
-        self._draw_status_pill(painter, center.x(), pill_y, inner_r)
+        self._draw_status_pill(painter)
 
     def _draw_sun_rays(self, painter, center, radius):
         """绘制右上角两条跳跃的活力光芒"""
         painter.save()
-        ray_color = QColor(255, 120, 105, 210) if self._mode != "relax" else QColor(245, 158, 11, 210)
+        ray_color = self._palette()["ray"]
         pen = QPen(ray_color, 4.5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
         painter.setPen(pen)
 
@@ -139,15 +209,16 @@ class TomatoTimerWidget(QWidget):
         painter.save()
         ring_w = 9.0
 
-        # 底环粉白轨道
-        bg_color = QColor("#feebeb") if self._mode != "relax" else QColor("#fef3e6")
+        # 底环轨道
+        pal = self._palette()
+        bg_color = QColor(pal["ring_bg"])
         bg_pen = QPen(bg_color, ring_w, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
         painter.setPen(bg_pen)
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawEllipse(center, radius, radius)
 
-        # 激活的圆弧（珊瑚红/琥珀橙）
-        accent_color = QColor("#ff6350") if self._mode != "relax" else QColor("#f59e0b")
+        # 激活的圆弧（珊瑚红 / 琥珀橙 / 晴空蓝）
+        accent_color = QColor(pal["accent"])
         if progress > 0:
             arc_pen = QPen(accent_color, ring_w, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
             painter.setPen(arc_pen)
@@ -192,7 +263,8 @@ class TomatoTimerWidget(QWidget):
         tw = size * 1.50
         th = size * 1.12
 
-        svg_name = "chibi_tomato_relax.svg" if self._mode == "relax" else "chibi_tomato.svg"
+        pal = self._palette()
+        svg_name = pal["svg"]
         script_dir = os.path.dirname(os.path.abspath(__file__))
         svg_path = os.path.join(script_dir, "assets", svg_name)
 
@@ -207,10 +279,11 @@ class TomatoTimerWidget(QWidget):
         # 备选软绘逻辑
         tw_fb = size * 1.48
         th_fb = size * 1.00
+        fb = pal["fallback"]
         body_grad = QRadialGradient(center.x() - tw_fb * 0.18, center.y() - th_fb * 0.18, tw_fb * 0.72)
-        body_grad.setColorAt(0.0, QColor("#ff7663"))
-        body_grad.setColorAt(0.58, QColor("#f44b36"))
-        body_grad.setColorAt(1.0, QColor("#d93826"))
+        body_grad.setColorAt(0.0, QColor(fb[0]))
+        body_grad.setColorAt(0.58, QColor(fb[1]))
+        body_grad.setColorAt(1.0, QColor(fb[2]))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(body_grad)
         painter.drawEllipse(QRectF(center.x() - tw_fb / 2, center.y() - th_fb / 2, tw_fb, th_fb))
@@ -240,28 +313,58 @@ class TomatoTimerWidget(QWidget):
         painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, text)
         painter.restore()
 
-    def _draw_status_pill(self, painter, cx, cy, inner_r):
-        """绘制下方状态指示胶囊 (淡粉背景 + 珊瑚红 || 暂停竖棒)"""
+    def _draw_status_pill(self, painter):
+        """绘制下方可点击状态胶囊（未运行时显示 ▶，运行中显示 ||）"""
         painter.save()
-        pw = inner_r * 0.42
-        ph = inner_r * 0.24
-        pill_rect = QRectF(cx - pw / 2, cy - ph / 2, pw, ph)
+        pill_rect = self._status_pill_rect()
+        cx = pill_rect.center().x()
+        cy = pill_rect.center().y()
+        ph = pill_rect.height()
 
-        # 胶囊底色
-        pill_bg = QColor("#fdeeed") if self._mode != "relax" else QColor("#fef3e6")
-        painter.setPen(Qt.PenStyle.NoPen)
+        pal = self._palette()
+        pill_bg = QColor(pal["pill_bg"])
+        accent = QColor(pal["accent"])
+        if self._pill_pressed:
+            pill_bg = pill_bg.darker(108)
+        elif self._pill_hovered:
+            pill_bg = pill_bg.darker(103)
+
+        if self._pill_hovered or self._pill_pressed:
+            border = QColor(accent)
+            border.setAlpha(90)
+            painter.setPen(QPen(border, 1.2))
+        else:
+            painter.setPen(Qt.PenStyle.NoPen)
+
         painter.setBrush(pill_bg)
         painter.drawRoundedRect(pill_rect, ph / 2, ph / 2)
 
-        # 胶囊内部图标：暂停 ||
-        bar_w = 4.2
-        bar_h = ph * 0.48
-        bar_spacing = 7.0
-        b_color = QColor("#ff6350") if self._mode != "relax" else QColor("#f59e0b")
-        painter.setBrush(b_color)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(accent)
 
-        b1 = QRectF(cx - bar_spacing / 2 - bar_w, cy - bar_h / 2, bar_w, bar_h)
-        b2 = QRectF(cx + bar_spacing / 2, cy - bar_h / 2, bar_w, bar_h)
-        painter.drawRoundedRect(b1, 2, 2)
-        painter.drawRoundedRect(b2, 2, 2)
+        if self._is_running:
+            # 运行中显示暂停双竖棒 ||
+            bar_w = 4.2
+            bar_h = ph * 0.48
+            bar_spacing = 7.0
+            b1 = QRectF(cx - bar_spacing / 2 - bar_w, cy - bar_h / 2, bar_w, bar_h)
+            b2 = QRectF(cx + bar_spacing / 2, cy - bar_h / 2, bar_w, bar_h)
+            painter.drawRoundedRect(b1, 2, 2)
+            painter.drawRoundedRect(b2, 2, 2)
+        else:
+            # 暂停/未开始时显示圆润播放三角 ▶
+            tri_h = ph * 0.48
+            tri_w = tri_h * 0.88
+            offset_x = 1.2
+            path = QPainterPath()
+            p_top = QPointF(cx - tri_w / 2 + offset_x, cy - tri_h / 2)
+            p_bot = QPointF(cx - tri_w / 2 + offset_x, cy + tri_h / 2)
+            p_tip = QPointF(cx + tri_w / 2 + offset_x, cy)
+            path.moveTo(p_top)
+            path.lineTo(p_tip)
+            path.lineTo(p_bot)
+            path.closeSubpath()
+            painter.setPen(QPen(accent, 1.6, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
+            painter.drawPath(path)
+
         painter.restore()
