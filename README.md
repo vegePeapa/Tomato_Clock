@@ -1,6 +1,3 @@
-<div align="center">
-
----
 
 ## 💡 编写初衷
 
