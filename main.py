@@ -17,11 +17,9 @@ from tomato_timer_widget import TomatoTimerWidget
 # 从 constants 模块导入共用常量
 from constants import (
     TimerMode, DATA_FILE_FULL_PATH, CONFIG_FILE_FULL_PATH,
-    DEFAULT_TASK_NAME, DEFAULT_CONFIG, DATA_FILE, ensure_ui_assets
+    DEFAULT_TASK_NAME, DEFAULT_CONFIG, DATA_FILE,
+    ensure_ui_assets, get_resource_dir
 )
-
-# 确保必要的图标资源就绪
-ensure_ui_assets()
 
 def report(func):
     @wraps(func)
@@ -201,7 +199,8 @@ class SettingsDialog(QDialog):
         self.setFixedSize(520, 485)
 
         # 程序目录与音效试听初始化
-        self.script_dir = os.path.dirname(os.path.abspath(__file__))
+        ensure_ui_assets()
+        self.script_dir = get_resource_dir()
         self._init_sound_preview()
 
         self._setup_ui()
@@ -611,7 +610,8 @@ class TimerWindow(QDialog):
         super().__init__(parent)
 
         # 目录与标记初始化
-        self.script_dir = os.path.dirname(os.path.abspath(__file__))
+        ensure_ui_assets()
+        self.script_dir = get_resource_dir()
         self._force_quit = False
 
         # 设置窗口标志：允许任务栏最小化和关闭，但不显示最大化按钮
@@ -697,7 +697,7 @@ class TimerWindow(QDialog):
         self.DATA_FILE_FULL_PATH = DATA_FILE_FULL_PATH
         self.CONFIG_FILE_FULL_PATH = CONFIG_FILE_FULL_PATH
         # 程序目录（用于音效文件等资源）
-        self.script_dir = os.path.dirname(os.path.abspath(__file__))
+        self.script_dir = get_resource_dir()
 
         # --- 加载配置 ---
         self.config = self._load_config()
@@ -949,7 +949,7 @@ class TimerWindow(QDialog):
             self.setProperty("timerMode", "focus")
             qss_file = "focus.qss"
         
-        script_dir = os.path.dirname(os.path.abspath(__file__))
+        script_dir = get_resource_dir()
         qss_path = os.path.join(script_dir, qss_file)
         if os.path.exists(qss_path):
             try:

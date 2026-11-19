@@ -2,6 +2,14 @@ import os
 import sys
 import shutil
 
+# 防止 Windows GBK 重定向/管道环境下打印 Unicode 符号（✓、🔄 等）触发 UnicodeEncodeError
+for _stream in (sys.stdout, sys.stderr):
+    if _stream is not None and hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(errors="replace")
+        except Exception:
+            pass
+
 DEFAULT_TASK_NAME = "未命名任务"
 DATA_FILE = "main_data.json"
 CONFIG_FILE = "config.json"
@@ -69,9 +77,16 @@ DATA_FILE_FULL_PATH = os.path.join(DATA_DIR, DATA_FILE)
 CONFIG_FILE_FULL_PATH = os.path.join(DATA_DIR, CONFIG_FILE)
 
 
+def get_resource_dir():
+    """获取程序静态资源目录，兼容源码运行与 PyInstaller 打包后的 _MEIPASS 目录"""
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        return sys._MEIPASS
+    return os.path.dirname(os.path.abspath(__file__))
+
+
 def ensure_ui_assets():
-    """确保 UI 必需的图标资源存在"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+    """确保 UI 必需的图标资源存在（需在 QGuiApplication 创建后调用）"""
+    script_dir = get_resource_dir()
     up_path = os.path.join(script_dir, "arrow_up.png")
     down_path = os.path.join(script_dir, "arrow_down.png")
     chk_path = os.path.join(script_dir, "checkbox_checked.png")
@@ -80,8 +95,12 @@ def ensure_ui_assets():
         return
 
     try:
-        from PyQt6.QtGui import QPixmap, QPainter, QPolygonF, QColor, QPen
+        from PyQt6.QtGui import QGuiApplication, QPixmap, QPainter, QPolygonF, QColor, QPen
         from PyQt6.QtCore import QPointF, Qt
+
+        # Qt6 要求必须先实例化 QGuiApplication 才能创建 QPixmap，否则会在 C++ 层触发 qFatal 崩溃
+        if QGuiApplication.instance() is None:
+            return
 
         # 重新生成符合暖意番茄主题的资源图标
         pix_up = QPixmap(16, 16)
@@ -125,7 +144,10 @@ def ensure_ui_assets():
 
 def migrate_data_to_user_dir():
     """检查程序目录是否有旧数据，如果有则迁移到用户目录"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+    if getattr(sys, 'frozen', False):
+        script_dir = os.path.dirname(os.path.abspath(sys.executable))
+    else:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
     old_data_file = os.path.join(script_dir, DATA_FILE)
     old_config_file = os.path.join(script_dir, CONFIG_FILE)
 

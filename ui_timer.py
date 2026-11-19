@@ -12,8 +12,9 @@ import os
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon
+from constants import get_resource_dir
 
-ASSETS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
+ASSETS_DIR = os.path.join(get_resource_dir(), "assets")
 
 
 class ModeCapsuleButton(QtWidgets.QPushButton):

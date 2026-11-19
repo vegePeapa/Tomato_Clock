@@ -1,11 +1,11 @@
 @echo off
 echo ==================================================
-echo         ·¬ÇÑÖÓ (TomatoClock) Ò»¼ü´ò°ü¹¤¾ß
+echo         ç•ªèŒ„é’Ÿ (TomatoClock) ä¸€é”®æ‰“åŒ…å·¥å…·
 echo ==================================================
 echo.
 
-:: ¼ì²é²¢¶¨Î»ÐéÄâ»·¾³
-set "VENV_DIR=C:\Users\86177\codeFile\pycharmProjects\GUI-pyQt\venv"
+:: æ£€æŸ¥å¹¶å®šä½è™šæ‹ŸçŽ¯å¢ƒ
+set "VENV_DIR=D:\codeFile\pycharmProjects\GUI-pyQt\venv"
 if not exist "%VENV_DIR%\Scripts\python.exe" set "VENV_DIR=..\venv"
 if not exist "%VENV_DIR%\Scripts\python.exe" set "VENV_DIR=venv"
 
@@ -14,36 +14,36 @@ if exist "%VENV_DIR%\Scripts\python.exe" (
     set "VENV_PIP=%VENV_DIR%\Scripts\pip.exe"
     set "VENV_PYINSTALLER=%VENV_DIR%\Scripts\pyinstaller.exe"
 ) else (
-    echo [¾¯¸æ] Î´¼ì²âµ½ÐéÄâ»·¾³£¬½«Ê¹ÓÃÏµÍ³È«¾Ö Python »·¾³½øÐÐ´ò°ü¡£
+    echo [è­¦å‘Š] æœªæ£€æµ‹åˆ°è™šæ‹ŸçŽ¯å¢ƒï¼Œå°†ä½¿ç”¨ç³»ç»Ÿå…¨å±€ Python çŽ¯å¢ƒè¿›è¡Œæ‰“åŒ…ã€‚
     set "VENV_PYTHON=python"
     set "VENV_PIP=pip"
     set "VENV_PYINSTALLER=pyinstaller"
 )
 
-:: ¼ì²éÊÇ·ñ°²×°ÁË PyInstaller
-echo [1/3] ÕýÔÚ¼ì²éÒÀÀµ»·¾³...
+:: æ£€æŸ¥æ˜¯å¦å®‰è£…äº† PyInstaller
+echo [1/3] æ­£åœ¨æ£€æŸ¥ä¾èµ–çŽ¯å¢ƒ...
 "%VENV_PYTHON%" -c "import PyInstaller" 2>nul
 if %errorlevel% neq 0 (
-    echo [ÐÅÏ¢] ÕýÔÚ°²×° PyInstaller ´ò°üÒÀÀµ...
+    echo [ä¿¡æ¯] æ­£åœ¨å®‰è£… PyInstaller æ‰“åŒ…ä¾èµ–...
     "%VENV_PIP%" install pyinstaller
 ) else (
-    echo [OK] PyInstaller ÒÀÀµ¼ì²âÍ¨¹ý¡£
+    echo [OK] PyInstaller ä¾èµ–æ£€æµ‹é€šè¿‡ã€‚
 )
 
-:: Ö´ÐÐ´ò°ü
+:: æ‰§è¡Œæ‰“åŒ…
 echo.
-echo [2/3] ÕýÔÚ¿ªÊ¼´ò°ü (Õâ¿ÉÄÜÐèÒª 1 µ½ 2 ·ÖÖÓ)...
-"%VENV_PYINSTALLER%" TomatoClock.spec
+echo [2/3] æ­£åœ¨å¼€å§‹æ‰“åŒ… (è¿™å¯èƒ½éœ€è¦ 1 åˆ° 2 åˆ†é’Ÿ)...
+"%VENV_PYINSTALLER%" --noconfirm TomatoClock.spec
 
 if %errorlevel% equ 0 (
     echo.
     echo ==================================================
-    echo [3/3] [OK] ´ò°üÍê³É£¡
-    echo ¿ÉÖ´ÐÐ³ÌÐòÒÑÊä³öÖÁ: dist\TomatoClock.exe
+    echo [3/3] [OK] æ‰“åŒ…å®Œæˆï¼
+    echo å¯æ‰§è¡Œç¨‹åºå·²è¾“å‡ºè‡³: dist\TomatoClock.exe
     echo ==================================================
 ) else (
     echo.
-    echo [´íÎó] ´ò°üÊ§°Ü£¬Çë¼ì²éÉÏ·½ÈÕÖ¾´íÎóÐÅÏ¢£¡
+    echo [é”™è¯¯] æ‰“åŒ…å¤±è´¥ï¼Œè¯·æ£€æŸ¥ä¸Šæ–¹æ—¥å¿—é”™è¯¯ä¿¡æ¯ï¼
 )
 
 echo.

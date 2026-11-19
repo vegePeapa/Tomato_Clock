@@ -16,6 +16,7 @@ from PyQt6.QtGui import (
     QPen, QBrush
 )
 from PyQt6.QtSvg import QSvgRenderer
+from constants import get_resource_dir
 
 
 class TomatoTimerWidget(QWidget):
@@ -265,8 +266,7 @@ class TomatoTimerWidget(QWidget):
 
         pal = self._palette()
         svg_name = pal["svg"]
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        svg_path = os.path.join(script_dir, "assets", svg_name)
+        svg_path = os.path.join(get_resource_dir(), "assets", svg_name)
 
         if os.path.exists(svg_path):
             renderer = QSvgRenderer(svg_path)
